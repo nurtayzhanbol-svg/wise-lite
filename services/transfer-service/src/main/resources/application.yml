@@ -9,6 +9,13 @@ spring:
     enabled: true
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP:localhost:9092}
+    consumer:
+      group-id: transfer-service
+      auto-offset-reset: earliest
+      # Commit offsets only after the record is processed (at-least-once).
+      enable-auto-commit: false
+    listener:
+      ack-mode: record
     producer:
       # acks=all + idempotence: a send that succeeds is on all in-sync replicas, and producer
       # retries never create duplicates or reorder records within a partition.

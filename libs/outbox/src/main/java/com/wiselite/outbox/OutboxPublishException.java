@@ -1,4 +1,4 @@
-package com.wiselite.transfer.outbox;
+package com.wiselite.outbox;
 
 public class OutboxPublishException extends RuntimeException {
 

@@ -9,6 +9,7 @@ extra["testcontainers.version"] = "1.21.4"
 
 dependencies {
     implementation(project(":libs:events"))
+    implementation(project(":libs:outbox"))
     implementation("org.springframework.kafka:spring-kafka")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
@@ -22,6 +23,7 @@ dependencies {
     testImplementation("org.testcontainers:junit-jupiter")
     testImplementation("org.testcontainers:postgresql")
     testImplementation("org.testcontainers:kafka")
+    testImplementation("org.awaitility:awaitility")
 }
 
 dependencies {

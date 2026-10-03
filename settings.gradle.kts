@@ -15,6 +15,7 @@ dependencyResolutionManagement {
 }
 
 include("libs:events")
+include("libs:outbox")
 include("services:transfer-service")
 include("services:payout-worker")
 include("services:fx-service")

@@ -1,5 +1,8 @@
 package com.wiselite.transfer.outbox;
 
+import com.wiselite.outbox.OutboxPublishException;
+import com.wiselite.outbox.OutboxRelay;
+import com.wiselite.outbox.OutboxWriter;
 import static com.wiselite.transfer.ledger.Posting.credit;
 import static com.wiselite.transfer.ledger.Posting.debit;
 import static org.assertj.core.api.Assertions.assertThat;

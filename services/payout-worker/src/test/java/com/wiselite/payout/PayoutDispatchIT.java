@@ -115,12 +115,17 @@ class PayoutDispatchIT {
         assertThat(postCallback(settled, sign(settled)).body()).contains("APPLIED");
         assertThat(postCallback(settled, sign(settled)).body()).contains("DUPLICATE");
         assertThat(status(id)).isEqualTo("SETTLED");
+        // Exactly one PayoutStatusChanged for transfer-service, despite the duplicate webhook.
+        assertThat(jdbc.sql("SELECT count(*) FROM outbox_events WHERE event_key = ?").param(id.toString())
+                .query(Long.class).single()).isEqualTo(1);
 
         var conflicting = callbackBody(UUID.randomUUID(), id, RailsApi.REJECTED);
         var response = postCallback(conflicting, sign(conflicting));
         assertThat(response.statusCode()).isEqualTo(200);
         assertThat(response.body()).contains("CONFLICT");
         assertThat(status(id)).isEqualTo("SETTLED");
+        assertThat(jdbc.sql("SELECT count(*) FROM outbox_events WHERE event_key = ?").param(id.toString())
+                .query(Long.class).single()).isEqualTo(1);
     }
 
     @Test

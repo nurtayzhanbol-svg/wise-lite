@@ -4,6 +4,7 @@ package com.wiselite.events;
 public final class Topics {
 
     public static final String TRANSFER_EVENTS = "transfers.events.v1";
+    public static final String PAYOUT_EVENTS = "payouts.events.v1";
 
     /** Header names set by the outbox relay on every record. */
     public static final String HEADER_EVENT_ID = "event-id";

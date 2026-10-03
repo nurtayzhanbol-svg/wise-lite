@@ -30,6 +30,6 @@ A payout calls a third-party rail over the network. Three outcomes are possible:
 - **Retrying inside the Kafka listener:** this would block the partition for minutes and couple payout latency to consumer lag. Instead the listener just records PENDING (M4) and the dispatcher owns retries.
 
 ## TODO
-- Report SETTLED/REJECTED back to transfer-service (`payouts.events.v1` via an outbox) → transfer COMPLETED/FAILED.
+- ~~Report SETTLED/REJECTED back to transfer-service~~: done. `PayoutStore.settle` writes `PayoutStatusChanged` to the payout-worker outbox in the same transaction. transfer-service (`PayoutOutcomeHandler`) dedupes it and completes or refunds the transfer.
 - Per-rail breakers and bulkheads (one breaker per rail/corridor).
 - Metrics: payouts by status, age of the oldest UNKNOWN, breaker state (M8).

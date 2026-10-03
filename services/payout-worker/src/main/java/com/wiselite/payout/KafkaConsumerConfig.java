@@ -35,6 +35,11 @@ public class KafkaConsumerConfig {
         return TopicBuilder.name(Topics.TRANSFER_EVENTS).partitions(3).replicas(1).build();
     }
 
+    @Bean
+    NewTopic payoutEvents() {
+        return TopicBuilder.name(Topics.PAYOUT_EVENTS).partitions(3).replicas(1).build();
+    }
+
     /** Same partition count as the source: the recoverer publishes to the same partition number. */
     @Bean
     NewTopic transferEventsDlt() {

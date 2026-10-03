@@ -17,6 +17,8 @@ spring:
       ack-mode: record
     producer:
       acks: all
+      properties:
+        enable.idempotence: true
 
 server:
   port: ${PORT:8081}

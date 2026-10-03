@@ -1,4 +1,4 @@
-package com.wiselite.transfer.outbox;
+package com.wiselite.outbox;
 
 import com.wiselite.events.Topics;
 import java.nio.charset.StandardCharsets;

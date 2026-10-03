@@ -7,7 +7,11 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import com.wiselite.events.PayoutStatusChanged;
+import com.wiselite.events.Topics;
+import com.wiselite.outbox.OutboxWriter;
 import org.springframework.jdbc.core.simple.JdbcClient;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -27,10 +31,12 @@ public class PayoutStore {
 
     private final JdbcClient jdbc;
     private final Clock clock;
+    private final OutboxWriter outbox;
 
-    public PayoutStore(JdbcClient jdbc, Clock clock) {
+    public PayoutStore(JdbcClient jdbc, Clock clock, OutboxWriter outbox) {
         this.jdbc = jdbc;
         this.clock = clock;
+        this.outbox = outbox;
     }
 
     /**
@@ -88,7 +94,11 @@ public class PayoutStore {
                 .update();
     }
 
-    /** Final outcome, from a webhook or a re-submit response. MANUAL_REVIEW can still be resolved. */
+    /**
+     * Final outcome, from a webhook or a re-submit response. MANUAL_REVIEW can still be resolved.
+     * Only the transition that actually applies emits a {@link PayoutStatusChanged} (outbox, same tx).
+     */
+    @Transactional
     public SettleOutcome settle(UUID transferId, PayoutStatus finalStatus, String note) {
         int rows = jdbc.sql("""
                         UPDATE payouts SET status = ?, last_error = COALESCE(?, last_error), lease_until = NULL, updated_at = ?
@@ -96,6 +106,8 @@ public class PayoutStore {
                 .params(finalStatus.name(), note, Timestamp.from(Instant.now(clock)), transferId)
                 .update();
         if (rows == 1) {
+            var event = new PayoutStatusChanged(UUID.randomUUID(), transferId, finalStatus.name(), note, Instant.now(clock));
+            outbox.append(Topics.PAYOUT_EVENTS, transferId.toString(), PayoutStatusChanged.TYPE, event.eventId(), event);
             return SettleOutcome.APPLIED;
         }
         var current = status(transferId);

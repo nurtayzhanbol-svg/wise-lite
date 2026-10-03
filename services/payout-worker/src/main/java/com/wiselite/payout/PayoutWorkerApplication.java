@@ -4,7 +4,9 @@ import org.springframework.boot.SpringApplication;
 import java.time.Clock;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import com.wiselite.outbox.OutboxConfiguration;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
@@ -13,6 +15,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
  */
 @SpringBootApplication
 @EnableScheduling
+@Import(OutboxConfiguration.class)
 @EnableConfigurationProperties(PayoutProperties.class)
 public class PayoutWorkerApplication {
 

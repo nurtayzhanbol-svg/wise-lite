@@ -69,3 +69,24 @@ stateDiagram-v2
 - `rails-simulator` (port 8083, in-memory): idempotent `POST /payments`, signed webhooks, fault injection via `POST /admin/faults`.
 - `payout-worker` dispatcher: lease-based claiming, idempotent submission, response classification, backoff, circuit breaker, `POST /rails/callbacks`.
 - `libs/rails-api`: the rail contract + HMAC signing.
+
+### End-to-end flow (M6)
+```mermaid
+sequenceDiagram
+    participant C as Client
+    participant T as transfer-service
+    participant K as Kafka
+    participant P as payout-worker
+    participant R as rails-simulator
+    C->>T: POST /transfers (Idempotency-Key)
+    T->>T: tx: FUNDED + ledger + outbox
+    T-->>K: transfers.events.v1 FUNDED (relay)
+    K->>P: consume, dedupe -> payout PENDING
+    P->>R: POST /payments (Idempotency-Key = transferId)
+    R-->>P: 202 PENDING
+    R->>P: signed webhook SETTLED
+    P->>P: tx: SETTLED + outbox
+    P-->>K: payouts.events.v1 SETTLED (relay)
+    K->>T: consume, dedupe -> PROCESSING -> COMPLETED + ledger
+```
+The outbox is shared code (`libs/outbox`); each service owns its own `outbox_events` table.

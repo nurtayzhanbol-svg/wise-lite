@@ -13,7 +13,7 @@ import com.wiselite.transfer.ledger.JournalEntry;
 import com.wiselite.transfer.ledger.JournalEntryType;
 import com.wiselite.transfer.ledger.LedgerService;
 import com.wiselite.transfer.ledger.Money;
-import com.wiselite.transfer.outbox.OutboxWriter;
+import com.wiselite.outbox.OutboxWriter;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.List;

@@ -10,6 +10,7 @@ extra["testcontainers.version"] = "1.21.4"
 dependencies {
     implementation(project(":libs:events"))
     implementation(project(":libs:rails-api"))
+    implementation(project(":libs:outbox"))
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-jdbc")
