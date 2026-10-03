@@ -8,3 +8,6 @@
 - [ ] M2: Add a TTL cleanup job for `idempotency_keys`.
 - [ ] M2: Variant: store 4xx responses using a savepoint (`Propagation.NESTED`) and compare the behaviour.
 - [ ] M2: Add `CANCELLED` (customer cancels while FUNDED) with a refund journal and tests.
+- [ ] M3: Implement "validate before lock" pessimistic variant and re-run the benchmark.
+- [ ] M3: Add a retry-on-40P01/40001 wrapper (with jitter) as a safety net and test it.
+- [ ] M3: Prototype sharded fee account (N sub-accounts) and benchmark hot-account throughput.

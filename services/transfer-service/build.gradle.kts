@@ -24,3 +24,18 @@ dependencies {
 dependencies {
     testImplementation("net.jqwik:jqwik:1.9.1")
 }
+
+// Benchmarks are slow and machine-dependent: excluded from `test`, run with `./gradlew benchmark`.
+tasks.test {
+    useJUnitPlatform { excludeTags("benchmark") }
+}
+
+tasks.register<Test>("benchmark") {
+    description = "Runs locking-strategy benchmarks (tagged 'benchmark')."
+    group = "verification"
+    testClassesDirs = sourceSets.test.get().output.classesDirs
+    classpath = sourceSets.test.get().runtimeClasspath
+    useJUnitPlatform { includeTags("benchmark") }
+    outputs.upToDateWhen { false }
+    testLogging { showStandardStreams = true }
+}

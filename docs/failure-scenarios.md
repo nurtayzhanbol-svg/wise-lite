@@ -5,7 +5,8 @@ What can go wrong, and how the system is expected to behave. Filled in per miles
 | Scenario | Expected behaviour | Milestone | Test |
 |----------|-------------------|-----------|------|
 | Client retries `POST /transfers` after a network timeout | Same transfer returned, no duplicate | M2 | `TransferApiIT.retryWithSameKey…`, `concurrentRequests…` |
-| Two concurrent debits from the same balance | One succeeds, the other is rejected or waits; balance never negative | M3 | — |
+| Two concurrent debits from the same balance | One succeeds, the other is rejected or waits; balance never negative | M3 | `LedgerConcurrencyIT.concurrentDebitsNeverOverdraw` |
+| Opposing transfers A→B and B→A at the same time | No deadlock (global lock order) | M3 | `LedgerConcurrencyIT.opposingTransfers…`; deadlock reproduced without ordering in `ConcurrencyAnomaliesIT` |
 | Service crashes after DB commit, before publishing to Kafka | Event is still published (outbox) | M4 | — |
 | Kafka delivers the same event twice | Consumer applies it once | M4 | — |
 | FX provider is down | Recent cached rate used within a freshness limit, otherwise a clear 503 | M5 | — |
