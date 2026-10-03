@@ -1,4 +1,4 @@
-.PHONY: up down build test run-transfer run-payout run-recon system-test
+.PHONY: up down build test run-transfer run-payout run-recon system-test run-risk
 
 up:            ## start local infrastructure (Postgres, Kafka)
 	docker compose up -d --wait
@@ -26,3 +26,6 @@ run-recon:
 
 system-test:
 	./gradlew systemTest
+
+run-risk:
+	./gradlew :services:risk-engine:bootRun

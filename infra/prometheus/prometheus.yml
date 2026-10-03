@@ -12,3 +12,4 @@ scrape_configs:
           - host.docker.internal:8082 # fx-service
           - host.docker.internal:8083 # rails-simulator
           - host.docker.internal:8084 # reconciliation-job
+          - host.docker.internal:8085 # risk-engine

@@ -1,0 +1,33 @@
+spring:
+  application:
+    name: risk-engine
+
+server:
+  port: ${PORT:8085}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  metrics:
+    tags:
+      application: ${spring.application.name}
+
+wiselite:
+  risk:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP:localhost:9092}
+    state-dir: ${RISK_STATE_DIR:${java.io.tmpdir}/wise-lite-risk}
+    # Read-process-write is atomic inside Kafka (transactions). Does NOT dedupe upstream duplicates.
+    processing-guarantee: exactly_once_v2
+    rules:
+      velocity-window: PT10M
+      max-transfers-per-window: 5
+      volume-window: P1D
+      # 10,000.00 in minor units, any currency (simplification: no FX normalisation, see ADR 0016)
+      max-volume-minor: 1000000
+      recipient-window: PT1H
+      max-senders-per-recipient: 3
+      # Events older than window end + grace (in event time) are dropped.
+      grace: PT5M
+      dedupe-retention: PT24H

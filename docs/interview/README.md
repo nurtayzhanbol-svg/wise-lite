@@ -24,3 +24,4 @@ One file per topic, written so you can explain and defend the design in a Wise s
 | Stream processing windows | M9 | — |
 | Scaling wise-lite 100× | final | — |
 | Observability: business metrics, tracing, symptom alerts | M8 | [08-observability.md](08-observability.md) |
+| Risk engine: Kafka Streams, windows, event time, EOS limits | M9 | [09-risk-engine.md](09-risk-engine.md) |

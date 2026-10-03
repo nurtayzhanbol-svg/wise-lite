@@ -26,7 +26,7 @@ flowchart LR
 | observability stack | Tracing a transfer across HTTP and Kafka, SLOs | M8 |
 | risk-engine | Stream processing with windows, an async step in a workflow | M9 |
 
-## Current state (M8)
+## Current state (M9)
 `transfer-service` contains the ledger core:
 
 ```mermaid
@@ -96,3 +96,6 @@ Nightly (and `POST /reconciliation/runs`): ledger self-checks in one REPEATABLE 
 
 ### M8: observability
 Every service: `/actuator/prometheus` + OTLP traces (Kafka headers carry `traceparent`). `docker compose --profile observability up -d` → Prometheus :9090 (alerts in `infra/prometheus/alerts.yml`), Grafana :3000 (dashboard "wise-lite: money movement"), Jaeger :16686. ADR 0015.
+
+### M9: risk-engine (port 8085)
+Kafka Streams over `transfers.events.v1` (FUNDED, deduped by eventId, event time) → VELOCITY / DAILY_VOLUME / MULE_RECIPIENT → `risk.alerts.v1`. Detection only (ADR 0016).

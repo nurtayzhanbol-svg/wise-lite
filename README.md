@@ -17,7 +17,7 @@ A simplified cross-border money-movement platform, built to study the engineerin
 | M6 | rails-simulator + payout-worker | ✅ |
 | M7 | Reconciliation | ✅ |
 | M8 | Observability, load, chaos (`./gradlew systemTest`, see docs/system-test.md) | ✅ |
-| M9 | risk-engine (Kafka Streams) | ⏳ |
+| M9 | risk-engine (Kafka Streams) | ✅ |
 
 ## Quick start
 

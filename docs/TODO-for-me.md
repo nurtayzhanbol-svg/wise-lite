@@ -22,3 +22,4 @@
 - [ ] M6: Rebuild exercises in `docs/interview/06-payouts-and-unknown-outcomes.md` §5.
 - [ ] M7: Rebuild exercises in `docs/interview/07-reconciliation.md` §5 (read order, isolation level, auto-resolver).
 - [ ] M8: Continue traces through the outbox (`traceparent` column) — see `docs/interview/08-observability.md` §3.
+- [ ] M9: Exercises in `docs/interview/09-risk-engine.md` §3 (HELD state, FX-normalised volume).
