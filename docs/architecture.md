@@ -26,7 +26,7 @@ flowchart LR
 | observability stack | Tracing a transfer across HTTP and Kafka, SLOs | M8 |
 | risk-engine | Stream processing with windows, an async step in a workflow | M9 |
 
-## Current state (M4)
+## Current state (M5)
 `transfer-service` contains the ledger core:
 
 ```mermaid
@@ -60,3 +60,7 @@ stateDiagram-v2
 - `transfer-service` writes `TransferStateChanged` to `outbox_events` in the state-change transaction. `OutboxRelay` publishes to `transfers.events.v1` (key = transfer id, 3 partitions).
 - `payout-worker` (own DB `payouts`) consumes the topic and records one `PENDING` payout per FUNDED transfer, idempotently. Bad records go to `transfers.events.v1.DLT`.
 - The shared contract lives in `libs/events` (plain Java records, no framework).
+
+### M5: fx-service
+- `POST /quotes`, `GET /quotes/{id}`, `POST /quotes/{id}/consume` (port 8082, DB `fx`). ECB rates are held in memory and refreshed every 10 min. It fails closed after 1 h without a successful refresh.
+- Not wired into transfer-service yet (TODO): same-currency transfers only so far.

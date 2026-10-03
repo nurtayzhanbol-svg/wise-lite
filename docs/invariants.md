@@ -14,3 +14,5 @@ Properties that must hold at all times. Each one will be backed by a test that f
 | I6 | Every committed state change eventually produces exactly one event *effect* downstream | outbox row in the same transaction; at-least-once relay; consumer dedupe (`processed_events`) + natural key (`payouts.transfer_id`) | `OutboxIT`, `PayoutWorkerIT` |
 | I7 | A transfer is paid out at most once, even with retries and duplicate callbacks | M6 | — |
 | I8 | Every ledger payout matches a bank-side record, or appears in the reconciliation report | M7 | — |
+| I9 | A quote is consumed at most once; never after expiry | conditional UPDATE in `QuoteService.consume` + DB `CHECK`s | `QuoteApiIT` |
+| I10 | Converted amount ≤ exact conversion, within 1 minor unit | `FxMath` rounding rules | `FxMathTest` (jqwik) |

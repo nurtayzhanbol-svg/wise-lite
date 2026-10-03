@@ -7,6 +7,16 @@ spring:
     password: ${DB_PASSWORD:wiselite}
   flyway:
     enabled: true
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP:localhost:9092}
+    producer:
+      # acks=all + idempotence: a send that succeeds is on all in-sync replicas, and producer
+      # retries never create duplicates or reorder records within a partition.
+      acks: all
+      properties:
+        enable.idempotence: true
+        max.in.flight.requests.per.connection: 5
+        delivery.timeout.ms: 30000
 
 server:
   port: ${PORT:8080}
@@ -16,3 +26,10 @@ management:
     web:
       exposure:
         include: health,info,prometheus
+
+wiselite:
+  outbox:
+    relay:
+      enabled: ${OUTBOX_RELAY_ENABLED:true}
+      interval: 200ms
+      batch-size: 100

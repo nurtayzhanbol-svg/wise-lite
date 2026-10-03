@@ -1,0 +1,28 @@
+spring:
+  application:
+    name: payout-worker
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/payouts}
+    username: ${DB_USER:wiselite}
+    password: ${DB_PASSWORD:wiselite}
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP:localhost:9092}
+    consumer:
+      group-id: payout-worker
+      auto-offset-reset: earliest
+      # Offsets are committed by the listener container after the record is processed
+      # (at-least-once). Never auto-commit: that could ack a record before its effect is durable.
+      enable-auto-commit: false
+    listener:
+      ack-mode: record
+    producer:
+      acks: all
+
+server:
+  port: ${PORT:8081}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus

@@ -15,3 +15,6 @@
 - [ ] M4: Outbox retention job + `processed_events` pruning.
 - [ ] M4: Make relay ordering safe with several instances (partition rows by key hash).
 - [ ] M4: DLT replay CLI.
+- [ ] M5: Cross-currency transfers in transfer-service using a consumed quote + FX_POOL multi-currency journal.
+- [ ] M5: Fallback rate provider chain; publication-date staleness check.
+- [ ] M5: Rebuild `FxMath` from ADR 0012 (`docs/interview/05-fx-quotes.md` §3).

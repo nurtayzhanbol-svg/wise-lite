@@ -19,7 +19,7 @@ public class OutboxRelayScheduler {
         this.relay = relay;
     }
 
-    @Scheduled(fixedDelayString = "${wiselite.outbox.relay.interval:200ms}")
+    @Scheduled(fixedDelayString = "${wiselite.outbox.relay.interval:PT0.2S}")
     public void drain() {
         try {
             int published;

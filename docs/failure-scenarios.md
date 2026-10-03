@@ -12,7 +12,11 @@ What can go wrong, and how the system is expected to behave. Filled in per miles
 | Kafka delivers the same event twice | Consumer applies it once | M4 | `PayoutWorkerIT.redeliveredEventIsAppliedOnce` |
 | Malformed (poison) record | Sent to DLT; partition keeps flowing | M4 | `PayoutWorkerIT.poisonRecordGoesToTheDlt…` |
 | Consumer DB blip | Retried with backoff; effect once | M4 | `PayoutWorkerIT.transientFailuresAreRetried…` |
-| FX provider is down | Recent cached rate used within a freshness limit, otherwise a clear 503 | M5 | — |
+| FX provider is down | Recent cached rate used within a freshness limit, otherwise a clear 503 | M5 | `QuoteApiIT.providerOutageDegradesThenFailsClosed`, `RateServiceTest` |
+| Quote used twice / by two transfers concurrently | Exactly one wins; same consumer retry is idempotent | M5 | `QuoteApiIT.concurrentConsumersExactlyOneWins`, `quoteIsSingleUse…` |
+| Quote used after TTL | 410 Gone | M5 | `QuoteApiIT.quoteExpiresAfterTtl` |
+| Malicious/garbage rate XML | Rejected, last good snapshot kept | M5 | `EcbRateProviderTest` |
+| Production-only config error (scheduler interval format) | Caught by booting with the relay enabled | M4/M5 | `OutboxRelaySchedulerIT` |
 | Payout request times out but the bank actually paid | Transfer stays in an "unknown" state until confirmed; never paid twice | M6 | — |
 | Bank sends a duplicate or late webhook | Ignored or applied idempotently | M6 | — |
 | Ledger and bank statement disagree | Mismatch appears in the reconciliation report | M7 | — |
