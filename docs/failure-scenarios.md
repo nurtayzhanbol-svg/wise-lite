@@ -4,7 +4,7 @@ What can go wrong, and how the system is expected to behave. Filled in per miles
 
 | Scenario | Expected behaviour | Milestone | Test |
 |----------|-------------------|-----------|------|
-| Client retries `POST /transfers` after a network timeout | Same transfer returned, no duplicate | M2 | — |
+| Client retries `POST /transfers` after a network timeout | Same transfer returned, no duplicate | M2 | `TransferApiIT.retryWithSameKey…`, `concurrentRequests…` |
 | Two concurrent debits from the same balance | One succeeds, the other is rejected or waits; balance never negative | M3 | — |
 | Service crashes after DB commit, before publishing to Kafka | Event is still published (outbox) | M4 | — |
 | Kafka delivers the same event twice | Consumer applies it once | M4 | — |
@@ -12,3 +12,7 @@ What can go wrong, and how the system is expected to behave. Filled in per miles
 | Payout request times out but the bank actually paid | Transfer stays in an "unknown" state until confirmed; never paid twice | M6 | — |
 | Bank sends a duplicate or late webhook | Ignored or applied idempotently | M6 | — |
 | Ledger and bank statement disagree | Mismatch appears in the reconciliation report | M7 | — |
+| Same key reused for a different request | 422, nothing executed | M2 | `TransferApiIT.sameKeyWithDifferentBodyIsRejected` |
+| Request fails (insufficient funds), client retries later with same key | Key not stored; retry runs fresh | M2 | `TransferApiIT.failedRequestIsNotStored…` |
+| Duplicate `complete`/`fail` event | No-op; journal posted once | M2 | `TransferServiceIT.duplicateEventsAreNoOps` |
+| `fail` arrives after `complete` | 409; no money moves | M2 | `TransferServiceIT.illegalTransitions…` |

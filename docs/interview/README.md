@@ -12,8 +12,8 @@ One file per topic, written so you can explain and defend the design in a Wise s
 | Topic | Milestone | File |
 |-------|-----------|------|
 | Money representation & double-entry ledger | M1 | [01-ledger.md](01-ledger.md) |
-| Idempotency keys | M2 | — |
-| State machines for payments | M2 | — |
+| Idempotency keys | M2 | [02-idempotency-and-state-machines.md](02-idempotency-and-state-machines.md) |
+| State machines for payments | M2 | [02-idempotency-and-state-machines.md](02-idempotency-and-state-machines.md) |
 | Isolation levels, pessimistic vs optimistic locking | M3 | — |
 | Transactional outbox vs 2PC vs CDC | M4 | — |
 | Kafka delivery semantics & idempotent consumers | M4 | — |

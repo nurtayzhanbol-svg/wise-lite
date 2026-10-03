@@ -13,6 +13,8 @@ public enum AccountType {
     EXTERNAL_FUNDING(true),
     /** Our liquidity pool per currency, used as the counterpart of FX conversions. */
     FX_POOL(true),
+    /** Money reserved for transfers in flight: debited from the customer, not yet paid out. */
+    PAYOUT_CLEARING(false),
     /** Fees we have earned. */
     FEE_REVENUE(false);
 

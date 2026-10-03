@@ -26,7 +26,7 @@ flowchart LR
 | observability stack | Tracing a transfer across HTTP and Kafka, SLOs | M8 |
 | risk-engine | Stream processing with windows, an async step in a workflow | M9 |
 
-## Current state (M1)
+## Current state (M2)
 `transfer-service` contains the ledger core:
 
 ```mermaid
@@ -39,4 +39,19 @@ classDiagram
 ```
 
 - `ledger` package: `Money`, `Account`, `JournalEntry`, `LedgerService` (the only code that moves money), `LedgerRepository` (SQL).
-- REST: `POST /accounts`, `GET /accounts/{id}`, `GET /owners/{ownerId}/accounts`. Money movement is not exposed over HTTP yet; transfers arrive in M2 together with idempotency.
+- REST: `POST /accounts`, `GET /accounts/{id}`, `GET /owners/{ownerId}/accounts`.
+- Transfers (M2): `POST /transfers` (headers `X-Owner-Id`, `Idempotency-Key`), `GET /transfers/{id}`.
+- Internal/simulation: `POST /internal/accounts/{id}/top-ups`, `POST /internal/transfers/{id}/processing|complete|fail`. In M6, the payout worker and bank webhooks replace these.
+
+```mermaid
+stateDiagram-v2
+    [*] --> CREATED
+    CREATED --> FUNDED: debit customer, credit PAYOUT_CLEARING
+    FUNDED --> PROCESSING
+    FUNDED --> FAILED
+    PROCESSING --> COMPLETED: debit clearing, credit EXTERNAL_FUNDING
+    PROCESSING --> FAILED
+    FAILED --> REFUNDED: debit clearing, credit customer
+    COMPLETED --> [*]
+    REFUNDED --> [*]
+```
