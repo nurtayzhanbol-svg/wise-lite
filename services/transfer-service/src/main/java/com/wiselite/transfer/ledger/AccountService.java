@@ -3,7 +3,6 @@ package com.wiselite.transfer.ledger;
 import java.util.Currency;
 import java.util.List;
 import java.util.UUID;
-import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,14 +30,12 @@ public class AccountService {
         if (type == AccountType.CUSTOMER) {
             throw new IllegalArgumentException("Not a system account type: " + type);
         }
+        // Get-or-create must not rely on catching the unique violation: inside a caller's transaction the
+        // failed INSERT aborts the whole transaction (SQLSTATE 25P02), so the retry SELECT can't run.
+        // ON CONFLICT DO NOTHING waits for a concurrent creator to commit and never aborts us.
         return repository.findSystemAccount(type, currency).orElseGet(() -> {
-            try {
-                var account = new Account(UUID.randomUUID(), null, currency, type);
-                repository.insertAccount(account);
-                return account;
-            } catch (DuplicateKeyException e) {
-                return repository.findSystemAccount(type, currency).orElseThrow();
-            }
+            repository.insertSystemAccountIfAbsent(new Account(UUID.randomUUID(), null, currency, type));
+            return repository.findSystemAccount(type, currency).orElseThrow();
         });
     }
 

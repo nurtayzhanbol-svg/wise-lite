@@ -38,3 +38,11 @@ Each statement sees committed data, but nothing stops another transaction commit
 
 ## 7. Rebuild exercise
 In `LedgerService.post`, remove `.sorted(...)` and run `LedgerConcurrencyIT.opposingTransfersDoNotDeadlockAndConserveMoney`. Watch it fail with 40P01. Restore it. Then implement the "validate before lock" pessimistic variant in `LockingStrategy` and re-run the benchmark.
+
+## Postscript (M8): get-or-create inside a transaction
+`catch (DuplicateKeyException) { select again }` looks correct, but in PostgreSQL a failed statement aborts the whole transaction (SQLSTATE 25P02), so the retry SELECT fails. Correct options:
+- `INSERT … ON CONFLICT DO NOTHING`, then SELECT;
+- a SAVEPOINT around the insert;
+- creating the row up front (migration or seed).
+
+Only the system test caught this, because only it runs concurrent first requests against an empty database. See `SystemAccountRaceIT`.

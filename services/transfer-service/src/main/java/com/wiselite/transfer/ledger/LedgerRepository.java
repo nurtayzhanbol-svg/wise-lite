@@ -20,6 +20,20 @@ public class LedgerRepository {
         this.jdbc = jdbc;
     }
 
+    /** Inserts the system account unless one exists for (type, currency); safe under concurrency. */
+    public void insertSystemAccountIfAbsent(Account account) {
+        int inserted = jdbc.sql("""
+                        INSERT INTO accounts (id, owner_id, currency, type) VALUES (?, NULL, ?, ?)
+                        ON CONFLICT (type, currency) WHERE owner_id IS NULL DO NOTHING""")
+                .params(account.id(), account.currency().getCurrencyCode(), account.type().name())
+                .update();
+        if (inserted == 1) {
+            jdbc.sql("INSERT INTO account_balances (account_id, currency, allow_negative) VALUES (?, ?, ?)")
+                    .params(account.id(), account.currency().getCurrencyCode(), account.type().allowsNegativeBalance())
+                    .update();
+        }
+    }
+
     public void insertAccount(Account account) {
         jdbc.sql("INSERT INTO accounts (id, owner_id, currency, type) VALUES (?, ?, ?, ?)")
                 .params(account.id(), account.ownerId(), account.currency().getCurrencyCode(), account.type().name())

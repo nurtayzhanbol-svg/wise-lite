@@ -32,3 +32,5 @@ What can go wrong, and how the system is expected to behave. Filled in per miles
 | Worker crashes mid-call | Lease expires, payout re-claimed, idempotent re-submit | M6 | design (ADR 0013) |
 | Any prevention mechanism has a bug / manual SQL / bank error | Detected by nightly reconciliation, reported as a typed break with severity | M7 | `ReconciliationIT`, `ReconcilerTest` |
 | Webhook lost forever, payout stuck in MANUAL_REVIEW | `STUCK_RESOLVABLE` break carries the rail's final outcome | M7 | `ReconciliationIT.stuckTransfer…` |
+| First transfers on a fresh DB race to lazily create a system account | Was: the loser's unique violation aborted its transaction → 500 (found by the M8 system test). Now `INSERT … ON CONFLICT DO NOTHING` + re-select | M8 | `SystemAccountRaceIT` |
+| Payout-worker SIGKILLed mid-batch, Kafka paused, rail faults, duplicate client retries — all at once | All transfers final, money conserved, ≤1 rail payment per transfer, recon clean | M8 | `ChaosSystemTest` |

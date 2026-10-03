@@ -23,3 +23,22 @@ jobs:
         with:
           name: test-reports
           path: "**/build/reports/tests/"
+
+  system-test:
+    # Whole system as separate processes under load + injected faults (tests/system).
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: gradle/actions/setup-gradle@v4
+      - run: ./gradlew :tests:system:systemTest --no-daemon
+      - name: Upload service logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: system-test-logs
+          path: tests/system/build/system-test-logs/
