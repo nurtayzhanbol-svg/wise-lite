@@ -19,7 +19,7 @@ One file per topic, written so you can explain and defend the design in a Wise s
 | Kafka delivery semantics & idempotent consumers | M4 | [04-outbox-and-kafka.md](04-outbox-and-kafka.md) |
 | Caching, staleness, time in tests | M5 | [05-fx-quotes.md](05-fx-quotes.md) |
 | Retries, backoff, circuit breakers, unknown outcomes | M6 | [06-payouts-and-unknown-outcomes.md](06-payouts-and-unknown-outcomes.md) |
-| Reconciliation | M7 | — |
+| Reconciliation | M7 | [07-reconciliation.md](07-reconciliation.md) |
 | Observability, SLOs | M8 | — |
 | Stream processing windows | M9 | — |
 | Scaling wise-lite 100× | final | — |

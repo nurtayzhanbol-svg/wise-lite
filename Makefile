@@ -20,3 +20,6 @@ run-rails:
 
 run-payout:
 	./gradlew :services:payout-worker:bootRun
+
+run-recon:
+	./gradlew :services:reconciliation-job:bootRun

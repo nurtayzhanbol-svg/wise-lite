@@ -70,6 +70,12 @@ class PaymentsController {
         return payment == null ? error(404, "unknown payment") : ResponseEntity.ok(payment.view());
     }
 
+    /** Real rails send a daily file (CSV, ISO 20022 camt.053); an endpoint is enough here. */
+    @GetMapping("/statement")
+    java.util.List<RailsApi.StatementLine> statement() {
+        return payments.values().stream().map(Payment::statementLine).toList();
+    }
+
     @GetMapping("/admin/faults")
     Faults faults() {
         return faults.get();

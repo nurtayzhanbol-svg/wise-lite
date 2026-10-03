@@ -26,7 +26,7 @@ flowchart LR
 | observability stack | Tracing a transfer across HTTP and Kafka, SLOs | M8 |
 | risk-engine | Stream processing with windows, an async step in a workflow | M9 |
 
-## Current state (M6)
+## Current state (M7)
 `transfer-service` contains the ledger core:
 
 ```mermaid
@@ -90,3 +90,6 @@ sequenceDiagram
     K->>T: consume, dedupe -> PROCESSING -> COMPLETED + ledger
 ```
 The outbox is shared code (`libs/outbox`); each service owns its own `outbox_events` table.
+
+### M7: reconciliation-job (port 8084)
+Nightly (and `POST /reconciliation/runs`): ledger self-checks in one REPEATABLE READ snapshot + matching against payouts and the rail statement. Breaks stored in its own `recon` DB. Read-only access to the other databases (ADR 0014).

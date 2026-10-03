@@ -20,3 +20,4 @@
 - [ ] M5: Rebuild `FxMath` from ADR 0012 (`docs/interview/05-fx-quotes.md` §3).
 - [x] M6: Close the loop: payouts.events.v1 -> transfer-service complete/fail.
 - [ ] M6: Rebuild exercises in `docs/interview/06-payouts-and-unknown-outcomes.md` §5.
+- [ ] M7: Rebuild exercises in `docs/interview/07-reconciliation.md` §5 (read order, isolation level, auto-resolver).

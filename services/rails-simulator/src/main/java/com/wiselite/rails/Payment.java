@@ -3,12 +3,14 @@ package com.wiselite.rails;
 import com.wiselite.rails.api.RailsApi;
 import com.wiselite.rails.api.RailsApi.PaymentRequest;
 import com.wiselite.rails.api.RailsApi.PaymentResponse;
+import java.time.Instant;
 import java.util.UUID;
 
 final class Payment {
 
     private final String id = UUID.randomUUID().toString();
     private final PaymentRequest request;
+    private final Instant createdAt = Instant.now();
     private String status = RailsApi.PENDING;
     private String eventId;
 
@@ -31,6 +33,10 @@ final class Payment {
 
     synchronized RailsApi.Callback callback() {
         return new RailsApi.Callback(eventId, id, request.reference(), status);
+    }
+
+    synchronized RailsApi.StatementLine statementLine() {
+        return new RailsApi.StatementLine(id, request.reference(), request.amountMinor(), request.currency(), status, createdAt);
     }
 
     synchronized PaymentResponse view() {

@@ -30,3 +30,5 @@ What can go wrong, and how the system is expected to behave. Filled in per miles
 | Duplicate / conflicting / forged webhook | Deduped / logged and ignored / 401 | M6 | `PayoutDispatchIT` |
 | Rail rejects (bad IBAN) | REJECTED, no retries | M6 | `PayoutDispatchIT.badRequestIsAPermanentRejection` |
 | Worker crashes mid-call | Lease expires, payout re-claimed, idempotent re-submit | M6 | design (ADR 0013) |
+| Any prevention mechanism has a bug / manual SQL / bank error | Detected by nightly reconciliation, reported as a typed break with severity | M7 | `ReconciliationIT`, `ReconcilerTest` |
+| Webhook lost forever, payout stuck in MANUAL_REVIEW | `STUCK_RESOLVABLE` break carries the rail's final outcome | M7 | `ReconciliationIT.stuckTransfer…` |

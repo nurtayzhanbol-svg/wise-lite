@@ -1,0 +1,34 @@
+spring:
+  application:
+    name: reconciliation-job
+
+server:
+  port: ${PORT:8084}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+
+wiselite:
+  recon:
+    # Own database for run results; read-only access to the others (see ADR 0014).
+    recon-db:
+      url: ${RECON_DB_URL:jdbc:postgresql://localhost:5432/recon}
+      username: ${DB_USER:wiselite}
+      password: ${DB_PASSWORD:wiselite}
+    transfers-db:
+      url: ${TRANSFERS_DB_URL:jdbc:postgresql://localhost:5432/transfers}
+      username: ${DB_USER:wiselite}
+      password: ${DB_PASSWORD:wiselite}
+    payouts-db:
+      url: ${PAYOUTS_DB_URL:jdbc:postgresql://localhost:5432/payouts}
+      username: ${DB_USER:wiselite}
+      password: ${DB_PASSWORD:wiselite}
+    rails-url: ${RAILS_URL:http://localhost:8083}
+    # Only judge records older than cutoff - grace; younger ones may still be in flight.
+    grace: PT10M
+    scheduler:
+      enabled: ${RECON_SCHEDULER_ENABLED:true}
+      cron: "0 0 2 * * *"

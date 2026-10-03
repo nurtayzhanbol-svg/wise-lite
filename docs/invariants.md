@@ -18,3 +18,5 @@ Properties that must hold at all times. Each one will be backed by a test that f
 | I10 | Converted amount ≤ exact conversion, within 1 minor unit | `FxMath` rounding rules | `FxMathTest` (jqwik) |
 | I11 | A payout is submitted to the rail under exactly one idempotency key (transfer id) | `RailsClient` | `PayoutDispatchIT.unknownOutcome…` |
 | I12 | A final payout status (SETTLED/REJECTED) never changes | status-guarded UPDATEs in `PayoutStore` | `PayoutDispatchIT` conflict + race tests |
+| I13 | PAYOUT_CLEARING balance = Σ amount of FUNDED/PROCESSING transfers, per currency | design of the transfer postings | `ReconciliationIT` (CLEARING_MISMATCH) |
+| I14 | Each transfer has at most one rail payment, with equal amount and currency | rail idempotency key | `ReconcilerTest` |

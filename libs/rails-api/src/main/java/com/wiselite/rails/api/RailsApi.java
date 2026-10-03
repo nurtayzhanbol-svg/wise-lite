@@ -4,6 +4,8 @@ package com.wiselite.rails.api;
  * Contract of the (simulated) payment rail, modelled on real bank/scheme APIs: idempotent
  * submission keyed by {@code Idempotency-Key}, asynchronous outcome via signed webhooks.
  */
+import java.time.Instant;
+
 public final class RailsApi {
 
     public static final String IDEMPOTENCY_KEY = "Idempotency-Key";
@@ -20,6 +22,15 @@ public final class RailsApi {
 
     /** Webhook body. {@code eventId} is stable across redeliveries of the same notification. */
     public record Callback(String eventId, String paymentId, String reference, String status) {}
+
+    /** One line of the rail's statement: what the rail believes happened, for reconciliation. */
+    public record StatementLine(
+            String paymentId,
+            String reference,
+            long amountMinor,
+            String currency,
+            String status,
+            Instant createdAt) {}
 
     private RailsApi() {}
 }
