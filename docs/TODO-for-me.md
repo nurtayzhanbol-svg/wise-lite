@@ -22,4 +22,12 @@
 - [ ] M6: Rebuild exercises in `docs/interview/06-payouts-and-unknown-outcomes.md` §5.
 - [ ] M7: Rebuild exercises in `docs/interview/07-reconciliation.md` §5 (read order, isolation level, auto-resolver).
 - [ ] M8: Continue traces through the outbox (`traceparent` column) — see `docs/interview/08-observability.md` §3.
-- [ ] M9: Exercises in `docs/interview/09-risk-engine.md` §3 (HELD state, FX-normalised volume).
+- [ ] M9: Exercises in `docs/interview/09-risk-engine.md` §3 (FX-normalised volume). HELD state: done in M10.
+- [ ] M10: Trace an ALLOW transfer end-to-end, writing down every transaction boundary (`docs/interview/risk-gating.md` §10.1).
+- [ ] M10: Trace REVIEW → manual release; explain why release needs no Idempotency-Key (§10.2).
+- [ ] M10: Break the gate (payout-worker accepts FUNDED) and watch `RiskGateSystemTest` catch the premature payout (§10.3).
+- [ ] M10: Remove decision dedupe + FUNDED check; reproduce a double refund in `RiskGateIT` (§10.4).
+- [ ] M10: Remove the row lock in `RiskOperatorService`; reproduce the release/reject race; explain it (§10.5).
+- [ ] M10: Rebuild `RiskOperatorService` and `RiskTimeoutService` from ADR 0017 (§10.6).
+- [ ] M10: Revisable decisions + pre-submit re-check under the payout lease (§10.7).
+- [ ] M10: Evict idle owners from the risk-engine `owner-history` store (TTL); alert on HELD count and decision lag.

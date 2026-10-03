@@ -63,7 +63,7 @@ public class TransferSource {
                         SELECT a.currency,
                                COALESCE((SELECT SUM(e.amount_minor) FROM ledger_entries e WHERE e.account_id = a.id), 0),
                                COALESCE((SELECT SUM(t.amount_minor) FROM transfers t
-                                         WHERE t.currency = a.currency AND t.state IN ('FUNDED', 'PROCESSING')), 0)
+                                         WHERE t.currency = a.currency AND t.state IN ('FUNDED', 'HELD', 'APPROVED', 'PROCESSING')), 0)
                         FROM accounts a WHERE a.type = 'PAYOUT_CLEARING'""")
                 .query((rs, n) -> new Clearing(rs.getString(1).trim(), rs.getLong(2), rs.getLong(3)))
                 .list().stream()

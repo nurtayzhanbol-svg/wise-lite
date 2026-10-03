@@ -19,6 +19,8 @@ public enum BreakType {
     AMOUNT_MISMATCH(Severity.CRITICAL),
     /** We refunded the customer but the rail paid (or may still pay) the recipient. */
     PAID_BUT_REFUNDED(Severity.CRITICAL),
+    /** The rail has a payment for a transfer that risk never approved: the risk gate was bypassed. */
+    PAID_BEFORE_APPROVAL(Severity.CRITICAL),
     /** We completed the transfer but the rail has no payment for it. */
     MISSING_AT_RAIL(Severity.HIGH),
     /** We completed the transfer but the rail did not settle it. */

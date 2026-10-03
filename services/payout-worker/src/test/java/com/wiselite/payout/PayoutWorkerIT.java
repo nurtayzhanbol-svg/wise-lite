@@ -75,12 +75,20 @@ class PayoutWorkerIT {
     }
 
     @Test
-    void nonFundedEventsAreIgnored() throws Exception {
+    void unapprovedTransfersNeverGetAPayout() throws Exception {
         var transferId = UUID.randomUUID();
-        send(event(transferId, "FUNDED", "PROCESSING"));
-        var marker = funded(transferId);
-        send(marker);
+        var fundedEvent = event(transferId, "CREATED", "FUNDED");
+        var heldEvent = event(transferId, "FUNDED", "HELD");
+        send(fundedEvent);
+        send(heldEvent);
+        // A marker for another transfer, sent with the same key → same partition, behind FUNDED and HELD.
+        // Once its payout exists, both earlier events were consumed (and ignored).
+        var marker = event(UUID.randomUUID(), "FUNDED", "APPROVED");
+        kafka.send(Topics.TRANSFER_EVENTS, transferId.toString(), json.writeValueAsString(marker)).get();
+        await().atMost(Duration.ofSeconds(20)).until(() -> payouts.payoutCount(marker.transferId()) == 1);
+        assertThat(payouts.payoutCount(transferId)).isZero();
 
+        send(funded(transferId)); // released → APPROVED
         await().atMost(Duration.ofSeconds(20)).until(() -> payouts.payoutCount(transferId) == 1);
     }
 
@@ -141,7 +149,7 @@ class PayoutWorkerIT {
     }
 
     private static TransferStateChanged funded(UUID transferId) {
-        return event(transferId, "CREATED", "FUNDED");
+        return event(transferId, "FUNDED", "APPROVED");
     }
 
     private static TransferStateChanged event(UUID transferId, String from, String to) {

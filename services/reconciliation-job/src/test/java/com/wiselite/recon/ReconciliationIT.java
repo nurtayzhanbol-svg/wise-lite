@@ -147,10 +147,10 @@ class ReconciliationIT {
     @Test
     void detectsLedgerCorruptionThatSlippedPastTheDatabaseGuards() {
         completedTransfer(10_000);
-        // A transfer marked FUNDED without the matching ledger movement:
+        // A transfer marked APPROVED (money in flight) without the matching ledger movement:
         ledgerDb.sql("""
                         INSERT INTO transfers (id, owner_id, source_account_id, amount_minor, currency, recipient_name, recipient_iban, state)
-                        VALUES (?, ?, ?, 500, 'EUR', 'Bob', 'DE89370400440532013000', 'FUNDED')""")
+                        VALUES (?, ?, ?, 500, 'EUR', 'Bob', 'DE89370400440532013000', 'APPROVED')""")
                 .params(UUID.randomUUID(), UUID.randomUUID(), customer).update();
         // A projection updated without an entry (e.g. a buggy hand-written fix):
         ledgerDb.sql("UPDATE account_balances SET balance_minor = balance_minor + 1 WHERE account_id = ?").param(customer).update();
@@ -209,7 +209,7 @@ class ReconciliationIT {
         var id = UUID.randomUUID();
         ledgerDb.sql("""
                         INSERT INTO transfers (id, owner_id, source_account_id, amount_minor, currency, recipient_name, recipient_iban, state)
-                        VALUES (?, ?, ?, ?, 'EUR', 'Bob', 'DE89370400440532013000', 'FUNDED')""")
+                        VALUES (?, ?, ?, ?, 'EUR', 'Bob', 'DE89370400440532013000', 'APPROVED')""")
                 .params(id, UUID.randomUUID(), customer, amount).update();
         post("fund-" + id, customer, clearing, amount);
         return id;

@@ -26,7 +26,7 @@ class ReconcilerTest {
     void consistentBooksHaveNoBreaks() {
         var done = transfer("COMPLETED", OLD);
         var refunded = transfer("REFUNDED", OLD);
-        var inFlight = transfer("FUNDED", OLD);
+        var inFlight = transfer("APPROVED", OLD);
         var breaks = Reconciler.reconcile(List.of(done, refunded, inFlight),
                 List.of(payout(done, "SETTLED"), payout(refunded, "REJECTED"), payout(inFlight, "SUBMITTED")),
                 List.of(line(done, RailsApi.SETTLED), line(refunded, RailsApi.REJECTED), line(inFlight, RailsApi.PENDING)),
@@ -85,10 +85,19 @@ class ReconcilerTest {
     }
 
     @Test
-    void fundedLongAgoWithoutAnyPayoutIsMissingPayout_butYoungTransfersAreLeftAlone() {
-        var old = transfer("FUNDED", OLD);
-        var young = transfer("FUNDED", NOW.minusSeconds(30));
+    void approvedLongAgoWithoutAnyPayoutIsMissingPayout_butYoungTransfersAreLeftAlone() {
+        var old = transfer("APPROVED", OLD);
+        var young = transfer("APPROVED", NOW.minusSeconds(30));
         assertThat(types(List.of(old, young), List.of(), List.of())).containsExactly(BreakType.MISSING_PAYOUT);
+    }
+
+    @Test
+    void railPaymentForAnUnapprovedTransferIsAGateViolation_butNoPayoutIsFine() {
+        var held = transfer("HELD", OLD);
+        var funded = transfer("FUNDED", OLD);
+        var waiting = transfer("HELD", OLD);
+        assertThat(types(List.of(held, funded, waiting), List.of(), List.of(line(held, RailsApi.SETTLED), line(funded, RailsApi.PENDING))))
+                .containsExactly(BreakType.PAID_BEFORE_APPROVAL, BreakType.PAID_BEFORE_APPROVAL);
     }
 
     /** Whatever mix of consistent outcomes we generate, a clean world produces zero breaks. */
@@ -112,7 +121,7 @@ class ReconcilerTest {
             }
         }
         for (int i = 0; i < inFlight; i++) {
-            var t = transfer(i % 2 == 0 ? "FUNDED" : "PROCESSING", OLD);
+            var t = transfer(i % 2 == 0 ? "APPROVED" : "PROCESSING", OLD);
             transfers.add(t);
             payouts.add(payout(t, "SUBMITTED"));
             rail.add(line(t, RailsApi.PENDING));

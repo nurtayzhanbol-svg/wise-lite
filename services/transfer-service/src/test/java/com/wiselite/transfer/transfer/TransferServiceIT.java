@@ -53,6 +53,8 @@ class TransferServiceIT {
         var t = create(alice, "25.00");
         var clearingBefore = clearingBalance();
 
+        transfers.approve(t.id(), "risk ALLOW");
+
         transfers.markProcessing(t.id());
         var done = transfers.complete(t.id());
 
@@ -65,6 +67,7 @@ class TransferServiceIT {
     void failureRefundsTheCustomer() {
         var alice = funded("100.00");
         var t = create(alice, "25.00");
+        transfers.approve(t.id(), "risk ALLOW");
         transfers.markProcessing(t.id());
 
         var refunded = transfers.fail(t.id(), "bank rejected: account closed");
@@ -72,14 +75,15 @@ class TransferServiceIT {
         assertThat(refunded.state()).isEqualTo(TransferState.REFUNDED);
         assertThat(accounts.balance(alice.id())).isEqualTo(Money.of("100.00", "EUR"));
         assertThat(transfers.history(t.id())).extracting(Transfer.StateChange::to).containsExactly(
-                TransferState.CREATED, TransferState.FUNDED, TransferState.PROCESSING, TransferState.FAILED, TransferState.REFUNDED);
-        assertThat(transfers.history(t.id()).get(3).reason()).isEqualTo("bank rejected: account closed");
+                TransferState.CREATED, TransferState.FUNDED, TransferState.APPROVED, TransferState.PROCESSING, TransferState.FAILED, TransferState.REFUNDED);
+        assertThat(transfers.history(t.id()).get(4).reason()).isEqualTo("bank rejected: account closed");
     }
 
     @Test
     void duplicateEventsAreNoOps() {
         var alice = funded("100.00");
         var t = create(alice, "25.00");
+        transfers.approve(t.id(), "risk ALLOW");
         transfers.markProcessing(t.id());
         transfers.complete(t.id());
 
@@ -87,7 +91,7 @@ class TransferServiceIT {
         transfers.complete(t.id());
 
         assertThat(ledgerRepository.countJournalEntries("transfer:" + t.id() + ":payout")).isEqualTo(1);
-        assertThat(transfers.history(t.id())).hasSize(4);
+        assertThat(transfers.history(t.id())).hasSize(5);
     }
 
     @Test
@@ -108,6 +112,8 @@ class TransferServiceIT {
         var t = create(alice, "25.00");
 
         assertThatThrownBy(() -> transfers.complete(t.id())).isInstanceOf(IllegalStateTransitionException.class);
+
+        transfers.approve(t.id(), "risk ALLOW");
 
         transfers.markProcessing(t.id());
         transfers.complete(t.id());

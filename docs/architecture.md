@@ -7,11 +7,13 @@ flowchart LR
   Client -->|REST + Idempotency-Key| TS[transfer-service<br/>ledger + state machine]
   TS -->|sync REST| FX[fx-service<br/>quotes, rates, fees]
   TS -->|outbox → Kafka| K[(Kafka)]
-  K --> PO[payout-worker<br/>retries, circuit breaker]
+  K -->|APPROVED only| PO[payout-worker<br/>retries, circuit breaker]
   PO -->|HTTP| RS[rails-simulator<br/>SEPA/Pix/FPS-like, faults]
   RS -->|webhooks, duplicated/late| TS
   K --> RE[risk-engine<br/>Kafka Streams]
-  RE -->|risk-decisions| K
+  RE -->|risk.decisions.v1<br/>ALLOW / REVIEW / BLOCK| K
+  K -->|decisions| TS
+  OP[operator] -->|release / reject HELD| TS
   REC[reconciliation-job] --> TS
   REC --> RS
 ```
@@ -25,8 +27,9 @@ flowchart LR
 | reconciliation-job | Detecting drift between internal records and the bank | M7 |
 | observability stack | Tracing a transfer across HTTP and Kafka, SLOs | M8 |
 | risk-engine | Stream processing with windows, an async step in a workflow | M9 |
+| risk gate (HELD) | Ordering an async decision before an irreversible external effect; fail-closed; idempotent manual decisions | M10 |
 
-## Current state (M9)
+## Current state (M10)
 `transfer-service` contains the ledger core:
 
 ```mermaid
@@ -42,13 +45,20 @@ classDiagram
 - REST: `POST /accounts`, `GET /accounts/{id}`, `GET /owners/{ownerId}/accounts`.
 - Transfers (M2): `POST /transfers` (headers `X-Owner-Id`, `Idempotency-Key`), `GET /transfers/{id}`.
 - Internal/simulation: `POST /internal/accounts/{id}/top-ups`, `POST /internal/transfers/{id}/processing|complete|fail`. In M6, the payout worker and bank webhooks replace these.
+- Risk (M10): `POST /internal/transfers/{id}/release|reject` (header `X-Operator`), `GET /internal/transfers/{id}/risk-decisions`.
+- Only APPROVED creates a payout. FUNDED, HELD and APPROVED keep money in PAYOUT_CLEARING.
 
 ```mermaid
 stateDiagram-v2
     [*] --> CREATED
     CREATED --> FUNDED: debit customer, credit PAYOUT_CLEARING
-    FUNDED --> PROCESSING
-    FUNDED --> FAILED
+    FUNDED --> APPROVED: risk ALLOW
+    FUNDED --> HELD: risk REVIEW / decision timeout
+    FUNDED --> FAILED: risk BLOCK
+    HELD --> APPROVED: operator release
+    HELD --> FAILED: operator reject
+    APPROVED --> PROCESSING: payout settled
+    APPROVED --> FAILED: payout rejected
     PROCESSING --> COMPLETED: debit clearing, credit EXTERNAL_FUNDING
     PROCESSING --> FAILED
     FAILED --> REFUNDED: debit clearing, credit customer
@@ -81,6 +91,10 @@ sequenceDiagram
     C->>T: POST /transfers (Idempotency-Key)
     T->>T: tx: FUNDED + ledger + outbox
     T-->>K: transfers.events.v1 FUNDED (relay)
+    K->>P: FUNDED ignored (not approved)
+    Note over K,T: risk-engine → risk.decisions.v1 → transfer-service (M10)
+    T->>T: tx: dedupe + APPROVED + outbox
+    T-->>K: transfers.events.v1 APPROVED (relay)
     K->>P: consume, dedupe -> payout PENDING
     P->>R: POST /payments (Idempotency-Key = transferId)
     R-->>P: 202 PENDING
@@ -99,3 +113,6 @@ Every service: `/actuator/prometheus` + OTLP traces (Kafka headers carry `tracep
 
 ### M9: risk-engine (port 8085)
 Kafka Streams over `transfers.events.v1` (FUNDED, deduped by eventId, event time) → VELOCITY / DAILY_VOLUME / MULE_RECIPIENT → `risk.alerts.v1`. Detection only (ADR 0016).
+
+### M10: risk gating (ADR 0017)
+risk-engine also emits one `RiskDecision` per FUNDED transfer (`risk.decisions.v1`, repartitioned by owner, deterministic id). transfer-service applies it only while the transfer is FUNDED (ALLOW → APPROVED, REVIEW → HELD, BLOCK → FAILED → REFUNDED); everything else is recorded as IGNORED in `risk_decisions`. No decision within `wiselite.risk.decision-timeout` → HELD (fail closed). Operators release/reject HELD transfers idempotently. payout-worker creates payouts only for `APPROVED`. Reconciliation flags `PAID_BEFORE_APPROVAL`. Details: `docs/interview/risk-gating.md`.

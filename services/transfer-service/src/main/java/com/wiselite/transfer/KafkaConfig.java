@@ -32,6 +32,16 @@ public class KafkaConfig {
     }
 
     @Bean
+    NewTopic riskDecisions() {
+        return TopicBuilder.name(Topics.RISK_DECISIONS).partitions(3).replicas(1).build();
+    }
+
+    @Bean
+    NewTopic riskDecisionsDlt() {
+        return TopicBuilder.name(Topics.RISK_DECISIONS + ".DLT").partitions(3).replicas(1).build();
+    }
+
+    @Bean
     NewTopic payoutEventsDlt() {
         return TopicBuilder.name(Topics.PAYOUT_EVENTS + ".DLT").partitions(3).replicas(1).build();
     }

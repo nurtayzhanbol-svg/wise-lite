@@ -167,11 +167,12 @@ class TransferApiIT {
         var id = read(postTransfer(owner, UUID.randomUUID().toString(), body(account, "5.00"))).get("id").asText();
 
         assertThat(http.postForEntity("/internal/transfers/" + id + "/complete", null, String.class).getStatusCode().value()).isEqualTo(409);
-        http.postForEntity("/internal/transfers/" + id + "/processing", null, String.class);
+        assertThat(http.postForEntity("/internal/transfers/" + id + "/processing", null, String.class).getStatusCode().value())
+                .as("no payout processing before risk approval").isEqualTo(409);
         var failed = http.postForEntity("/internal/transfers/" + id + "/fail", Map.of("reason", "timeout"), String.class);
 
         assertThat(read(failed).get("state").asText()).isEqualTo("REFUNDED");
-        assertThat(read(failed).get("history")).hasSize(5);
+        assertThat(read(failed).get("history")).hasSize(4);
         assertThat(accounts.balance(account)).isEqualTo(Money.of("100.00", "EUR"));
     }
 

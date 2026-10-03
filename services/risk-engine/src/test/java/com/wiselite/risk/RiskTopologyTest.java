@@ -27,7 +27,7 @@ import org.junit.jupiter.api.io.TempDir;
 class RiskTopologyTest {
 
     static final RiskRules RULES = new RiskRules(Duration.ofMinutes(10), 5, Duration.ofDays(1), 1_000_000,
-            Duration.ofHours(1), 3, Duration.ofMinutes(5), Duration.ofHours(24));
+            Duration.ofHours(1), 3, Duration.ofMinutes(5), Duration.ofHours(24), 5_000_000, 50_000_000, List.of());
     static final Instant T0 = Instant.parse("2026-10-03T10:00:00Z");
     static final String IBAN = "DE89370400440532013000";
 

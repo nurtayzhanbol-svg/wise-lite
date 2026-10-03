@@ -13,9 +13,13 @@ import com.wiselite.transfer.ledger.JournalEntryType;
 import com.wiselite.transfer.ledger.LedgerService;
 import com.wiselite.transfer.ledger.Money;
 import com.wiselite.transfer.transfer.TransferService;
+import com.wiselite.transfer.risk.RiskDecisionLog;
+import com.wiselite.transfer.risk.RiskOperatorService;
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -36,14 +40,24 @@ public class InternalController {
 
     public record FailRequest(String reason) {}
 
+    public record VerdictRequest(String reason) {}
+
+    public record DecisionView(UUID decisionId, String source, String decision, String reasons, String outcome,
+            String stateBefore, String actor, java.time.Instant decidedAt) {}
+
     private final TransferService transfers;
     private final TransferController transferViews;
     private final AccountService accounts;
     private final LedgerService ledger;
     private final IdempotencyService idempotency;
 
+    private final RiskOperatorService operators;
+    private final RiskDecisionLog riskLog;
+
     public InternalController(TransferService transfers, TransferController transferViews, AccountService accounts,
-            LedgerService ledger, IdempotencyService idempotency) {
+            LedgerService ledger, IdempotencyService idempotency, RiskOperatorService operators, RiskDecisionLog riskLog) {
+        this.operators = operators;
+        this.riskLog = riskLog;
         this.transfers = transfers;
         this.transferViews = transferViews;
         this.accounts = accounts;
@@ -84,6 +98,26 @@ public class InternalController {
     @PostMapping("/internal/transfers/{id}/fail")
     public TransferController.TransferView fail(@PathVariable UUID id, @RequestBody FailRequest request) {
         return transferViews.view(transfers.fail(id, request.reason()));
+    }
+
+    /** Operator releases a HELD transfer. Safe to retry: repeating it returns the same transfer. */
+    @PostMapping("/internal/transfers/{id}/release")
+    public TransferController.TransferView release(@PathVariable UUID id, @RequestHeader("X-Operator") String operator,
+            @RequestBody(required = false) VerdictRequest request) {
+        return transferViews.view(operators.release(id, operator, request == null ? null : request.reason()));
+    }
+
+    /** Operator rejects a HELD transfer: refund. Safe to retry. */
+    @PostMapping("/internal/transfers/{id}/reject")
+    public TransferController.TransferView reject(@PathVariable UUID id, @RequestHeader("X-Operator") String operator,
+            @RequestBody(required = false) VerdictRequest request) {
+        return transferViews.view(operators.reject(id, operator, request == null ? null : request.reason()));
+    }
+
+    @GetMapping("/internal/transfers/{id}/risk-decisions")
+    public List<DecisionView> riskDecisions(@PathVariable UUID id) {
+        return riskLog.list(id).stream().map(e -> new DecisionView(e.decisionId(), e.source().name(), e.decision(),
+                e.reasons(), e.applied() ? "APPLIED" : "IGNORED", e.stateBefore().name(), e.actor(), e.decidedAt())).toList();
     }
 
     record MoneyViewHolder(AccountController.MoneyView balance) {

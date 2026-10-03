@@ -53,3 +53,9 @@ wiselite:
       enabled: ${OUTBOX_RELAY_ENABLED:true}
       interval: PT0.2S  # ISO-8601: @Scheduled does not parse "200ms"
       batch-size: 100
+  risk:
+    # Fail closed: no decision within this time → HELD for a human (ADR 0017).
+    decision-timeout: ${RISK_DECISION_TIMEOUT:PT5M}
+    timeout-sweep:
+      enabled: ${RISK_TIMEOUT_SWEEP_ENABLED:true}
+      interval: PT5S

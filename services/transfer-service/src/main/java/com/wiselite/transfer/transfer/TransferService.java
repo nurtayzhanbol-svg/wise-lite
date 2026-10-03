@@ -76,6 +76,18 @@ public class TransferService {
                 credit(clearing(t), t.amount()))));
     }
 
+    /** Risk approved (automatically or by an operator): the only transition that lets a payout exist. */
+    @Transactional
+    public Transfer approve(UUID id, String reason) {
+        return advance(id, TransferState.APPROVED, reason, t -> {});
+    }
+
+    /** Risk wants a human: money stays in clearing, no payout may be created. */
+    @Transactional
+    public Transfer hold(UUID id, String reason) {
+        return advance(id, TransferState.HELD, reason, t -> {});
+    }
+
     @Transactional
     public Transfer markProcessing(UUID id) {
         return advance(id, TransferState.PROCESSING, null, t -> {});
@@ -90,7 +102,7 @@ public class TransferService {
                 credit(accounts.systemAccount(AccountType.EXTERNAL_FUNDING, t.amount().currency()).id(), t.amount()))));
     }
 
-    /** The payout failed: FAILED, then refund the customer (REFUNDED) in the same transaction. */
+    /** The payout failed or risk said no: FAILED, then refund the customer (REFUNDED) in the same transaction. */
     @Transactional
     public Transfer fail(UUID id, String reason) {
         var current = transfers.find(id).orElseThrow(() -> new TransferNotFoundException(id));

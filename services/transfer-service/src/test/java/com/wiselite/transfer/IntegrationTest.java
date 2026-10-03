@@ -15,6 +15,8 @@ import org.springframework.context.annotation.Import;
         properties = {
             // Tests drive the relay explicitly via OutboxRelay.publishBatch().
             "wiselite.outbox.relay.enabled=false",
+            // Tests call RiskTimeoutService.holdOverdue() explicitly.
+            "wiselite.risk.timeout-sweep.enabled=false",
             // Fail fast when a test makes Kafka unavailable.
             "spring.kafka.producer.properties.delivery.timeout.ms=3000",
             "spring.kafka.producer.properties.request.timeout.ms=1000",

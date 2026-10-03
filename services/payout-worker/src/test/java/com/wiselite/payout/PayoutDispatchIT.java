@@ -274,7 +274,7 @@ class PayoutDispatchIT {
 
     private UUID newPayout() {
         var id = UUID.randomUUID();
-        payouts.handle(new TransferStateChanged(UUID.randomUUID(), id, UUID.randomUUID(), "CREATED", "FUNDED", 2_500, "EUR",
+        payouts.handle(new TransferStateChanged(UUID.randomUUID(), id, UUID.randomUUID(), "FUNDED", "APPROVED", 2_500, "EUR",
                 "Bob", "DE89370400440532013000", null, Instant.now()));
         return id;
     }

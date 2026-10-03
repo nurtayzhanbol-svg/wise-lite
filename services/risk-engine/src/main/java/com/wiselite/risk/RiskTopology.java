@@ -1,6 +1,7 @@
 package com.wiselite.risk;
 
 import com.wiselite.events.RiskAlert;
+import com.wiselite.events.RiskDecision;
 import com.wiselite.events.Topics;
 import com.wiselite.events.TransferStateChanged;
 import io.micrometer.core.instrument.Metrics;
@@ -21,6 +22,7 @@ import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.Materialized;
 import org.apache.kafka.streams.kstream.Named;
 import org.apache.kafka.streams.kstream.Produced;
+import org.apache.kafka.streams.kstream.Repartitioned;
 import org.apache.kafka.streams.kstream.SlidingWindows;
 import org.apache.kafka.streams.kstream.TimeWindows;
 import org.apache.kafka.streams.kstream.Window;
@@ -29,7 +31,11 @@ import org.apache.kafka.streams.state.Stores;
 import org.apache.kafka.streams.state.WindowStore;
 
 /**
- * transfers.events.v1 → (FUNDED only, deduplicated by eventId, event time) → three windowed rules → risk.alerts.v1.
+ * transfers.events.v1 → (FUNDED only, deduplicated by eventId, event time) →
+ * <ol>
+ *   <li>one {@link RiskDecision} per transfer → risk.decisions.v1 (the gate, ADR 0017);
+ *   <li>three windowed alert rules → risk.alerts.v1 (detection, ADR 0016):
+ * </ol>
  *
  * <ul>
  *   <li>VELOCITY: more than N funded transfers by one owner within a sliding window.
@@ -43,6 +49,7 @@ public final class RiskTopology {
     static final String SUPPRESS_VELOCITY = "suppress-velocity";
     static final String SUPPRESS_VOLUME = "suppress-volume";
     static final String SUPPRESS_MULE = "suppress-mule";
+    static final String OWNER_HISTORY_STORE = "owner-history";
 
     private RiskTopology() {}
 
@@ -64,6 +71,15 @@ public final class RiskTopology {
                 // same event twice (ADR 0010). Only an id-based dedupe makes the counts right.
                 .process(() -> new FirstSeen<TransferStateChanged>(DEDUPE_STORE, rules.dedupeRetention(),
                         e -> e.eventId().toString()), Named.as("dedupe-event-id"), DEDUPE_STORE);
+
+        builder.addStateStore(Stores.keyValueStoreBuilder(Stores.persistentKeyValueStore(OWNER_HISTORY_STORE),
+                Serdes.String(), new JsonSerde<>(OwnerHistory.class)));
+        funded.selectKey((k, e) -> e.ownerId().toString(), Named.as("decision-key-by-owner"))
+                .repartition(Repartitioned.<String, TransferStateChanged>as("decision-by-owner")
+                        .withKeySerde(Serdes.String()).withValueSerde(events))
+                .process(() -> new DecisionProcessor(rules), Named.as("decide"), OWNER_HISTORY_STORE)
+                .peek((k, d) -> Metrics.counter("wiselite.risk.decisions", "decision", d.decision()).increment())
+                .to(Topics.RISK_DECISIONS, Produced.with(Serdes.String(), new JsonSerde<>(RiskDecision.class)));
 
         var velocity = funded
                 .groupBy((k, e) -> e.ownerId().toString(), Grouped.with("by-owner", Serdes.String(), events))

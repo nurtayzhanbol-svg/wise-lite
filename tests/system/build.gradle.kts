@@ -12,7 +12,7 @@ dependencyManagement {
 // Boot 3.3 BOM pins an older Testcontainers that Docker 29 rejects (same pin as the service modules).
 extra["testcontainers.version"] = "1.21.4"
 
-val services = listOf("transfer-service", "payout-worker", "rails-simulator", "reconciliation-job")
+val services = listOf("transfer-service", "payout-worker", "rails-simulator", "reconciliation-job", "risk-engine")
 services.forEach { evaluationDependsOn(":services:$it") }
 
 dependencies {
@@ -24,6 +24,7 @@ dependencies {
     testImplementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
     testImplementation("org.testcontainers:postgresql")
     testImplementation("org.testcontainers:kafka")
+    testImplementation("org.apache.kafka:kafka-clients")
     testRuntimeOnly("org.postgresql:postgresql")
     testRuntimeOnly("org.slf4j:slf4j-simple")
 }

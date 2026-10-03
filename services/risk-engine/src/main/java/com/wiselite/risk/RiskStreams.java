@@ -59,7 +59,7 @@ public class RiskStreams implements SmartLifecycle, HealthIndicator {
         try (var admin = Admin.create(Map.<String, Object>of(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG,
                 properties.bootstrapServers()))) {
             var existing = admin.listTopics().names().get(30, TimeUnit.SECONDS);
-            var missing = List.of(Topics.TRANSFER_EVENTS, Topics.RISK_ALERTS).stream()
+            var missing = List.of(Topics.TRANSFER_EVENTS, Topics.RISK_ALERTS, Topics.RISK_DECISIONS).stream()
                     .filter(t -> !existing.contains(t))
                     .map(t -> new NewTopic(t, Optional.of(3), Optional.empty()))
                     .toList();

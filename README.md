@@ -18,6 +18,7 @@ A simplified cross-border money-movement platform, built to study the engineerin
 | M7 | Reconciliation | ✅ |
 | M8 | Observability, load, chaos (`./gradlew systemTest`, see docs/system-test.md) | ✅ |
 | M9 | risk-engine (Kafka Streams) | ✅ |
+| M10 | Risk gating: HELD transfers, fail-closed timeout, manual release/reject (ADR 0017, docs/interview/risk-gating.md) | ✅ |
 
 ## Quick start
 

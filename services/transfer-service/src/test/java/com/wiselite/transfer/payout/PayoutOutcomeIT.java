@@ -82,7 +82,8 @@ class PayoutOutcomeIT {
         var funding = accounts.systemAccount(AccountType.EXTERNAL_FUNDING, EUR);
         ledger.post(JournalEntry.of(JournalEntryType.TOP_UP, "topup-" + account.id(),
                 debit(funding.id(), Money.of(topUp, "EUR")), credit(account.id(), Money.of(topUp, "EUR"))));
-        return transfers.create(account.ownerId(), new TransferService.CreateTransfer(account.id(), Money.of(amount, "EUR"),
+        var t = transfers.create(account.ownerId(), new TransferService.CreateTransfer(account.id(), Money.of(amount, "EUR"),
                 new Transfer.Recipient("Bob", "DE89370400440532013000")));
+        return transfers.approve(t.id(), "risk ALLOW");
     }
 }

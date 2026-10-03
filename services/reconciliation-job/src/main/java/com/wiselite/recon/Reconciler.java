@@ -66,7 +66,14 @@ public final class Reconciler {
                         breaks.add(Break.of(BreakType.PAID_BUT_REFUNDED, ref, "transfer REFUNDED, rail " + line.status()));
                     }
                 }
-                case "FUNDED", "PROCESSING" -> {
+                case "FUNDED", "HELD" -> {
+                    // Approval precedes payout precedes rail payment. A rail line older than the cutoff (so older than our
+                    // transfers snapshot) for a transfer that is still unapproved in that snapshot is a gate violation.
+                    if (line != null && line.createdAt().isBefore(cutoff)) {
+                        breaks.add(Break.of(BreakType.PAID_BEFORE_APPROVAL, ref, "transfer " + t.state() + ", rail " + line.status()));
+                    }
+                }
+                case "APPROVED", "PROCESSING" -> {
                     if (!t.updatedAt().isBefore(settledBefore)) {
                         break;
                     }

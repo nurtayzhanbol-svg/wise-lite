@@ -10,6 +10,8 @@ public class PayoutService {
 
     public enum Outcome { CREATED, DUPLICATE_EVENT, ALREADY_REQUESTED, IGNORED }
 
+    static final String APPROVED = "APPROVED";
+
     private final JdbcClient jdbc;
 
     public PayoutService(JdbcClient jdbc) {
@@ -23,7 +25,9 @@ public class PayoutService {
      */
     @Transactional
     public Outcome handle(TransferStateChanged event) {
-        if (!"FUNDED".equals(event.toState())) {
+        // The risk gate: a payout exists only for a transfer that was APPROVED. FUNDED (awaiting risk) and
+        // HELD never create one, so there is nothing to cancel if risk says no.
+        if (!APPROVED.equals(event.toState())) {
             return Outcome.IGNORED;
         }
         int fresh = jdbc.sql("INSERT INTO processed_events (event_id) VALUES (?) ON CONFLICT DO NOTHING")

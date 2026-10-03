@@ -31,3 +31,7 @@ wiselite:
       # Events older than window end + grace (in event time) are dropped.
       grace: PT5M
       dedupe-retention: PT24H
+      # Per-transfer decision (ALLOW / REVIEW / BLOCK), minor units, any currency.
+      review-amount-minor: 500000    # 5,000.00 → REVIEW
+      block-amount-minor: 5000000    # 50,000.00 → BLOCK
+      blocked-ibans: []

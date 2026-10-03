@@ -34,3 +34,16 @@ What can go wrong, and how the system is expected to behave. Filled in per miles
 | Webhook lost forever, payout stuck in MANUAL_REVIEW | `STUCK_RESOLVABLE` break carries the rail's final outcome | M7 | `ReconciliationIT.stuckTransfer…` |
 | First transfers on a fresh DB race to lazily create a system account | Was: the loser's unique violation aborted its transaction → 500 (found by the M8 system test). Now `INSERT … ON CONFLICT DO NOTHING` + re-select | M8 | `SystemAccountRaceIT` |
 | Payout-worker SIGKILLed mid-batch, Kafka paused, rail faults, duplicate client retries — all at once | All transfers final, money conserved, ≤1 rail payment per transfer, recon clean | M8 | `ChaosSystemTest` |
+| Risk decision delivered twice (Kafka redelivery) | Deduped by `decisionId`; one effect | M10 | `RiskGateIT.redeliveredDecisionIsADuplicate`, `decisionsArriveOverKafka` |
+| risk-engine re-emits a decision (crash/reprocess) | Same deterministic `decisionId` → duplicate | M10 | `RiskDecisionTopologyTest.sameTransferUnderANewEventId…` |
+| Conflicting/late decision (new id) for a decided, HELD or terminal transfer | Recorded IGNORED; state, ledger, payouts unchanged | M10 | `RiskGateIT.conflictingLateDecisions…`, `decisionAfterCompletion…`, `RiskGateSystemTest.replayedAndLateDecisionsChangeNothing` |
+| risk-engine down / no decision in time | Fail closed: FUNDED → HELD after timeout; late decision recorded, not applied; operator releases | M10 | `RiskGateIT.missingDecisionHolds…`, `RiskGateSystemTest.riskEngineDownFailsClosed` |
+| Decision races the timeout sweeper | Row lock: exactly one acts | M10 | `RiskGateIT.timeoutRacingTheDecisionHasOneWinner` |
+| transfer-service crashes mid-decision | Transaction rolls back; redelivered decision applied once | M10 | `RiskGateIT.crashMidDecision…`, `RiskGateSystemTest.crashesDuringDecisionProcessing…` |
+| transfer-service restarts with decisions queued in Kafka | First timeout sweep delayed by one timeout so the consumer catches up; no spurious holds | M10 | `RiskGateSystemTest.crashesDuringDecisionProcessing…` |
+| payout-worker crash/restart after approval | APPROVED re-consumed; one payout per transfer | M10 | `RiskGateSystemTest.crashesDuringDecisionProcessing…` |
+| payout-worker sees FUNDED/HELD (or a stale FUNDED after release) | Ignored; only APPROVED creates a payout | M10 | `PayoutWorkerIT.unapprovedTransfersNeverGetAPayout` |
+| Operator clicks release (or reject) many times | One transition; repeats return 200 with same state | M10 | `RiskGateIT.releaseIsIdempotent…`, `rejectIsIdempotent…`, `RiskGateSystemTest.allowReviewBlockEndToEnd` |
+| Release and reject at the same time | Exactly one applied, other 409 | M10 | `RiskGateIT.releaseRacingReject…`, `RiskGateSystemTest.releaseRacingReject…` |
+| Malformed decision record | DLT; transfer times out to HELD | M10 | design (`RiskDecisionsListener`) |
+| Gate bypassed by a bug | Reconciliation `PAID_BEFORE_APPROVAL` (critical) | M10 | `ReconcilerTest.railPaymentForAnUnapprovedTransfer…` |

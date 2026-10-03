@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
- * Consumes transfer events and pays out FUNDED transfers. M4: records payout requests
+ * Consumes transfer events and pays out APPROVED transfers. M4: records payout requests
  * idempotently. M6: calls the rails simulator with retries and handles unknown outcomes.
  */
 @SpringBootApplication

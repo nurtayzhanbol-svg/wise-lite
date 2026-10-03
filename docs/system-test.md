@@ -33,3 +33,16 @@ It runs in CI as a separate job after `build`.
 - Raise `failAfterRate` to 0.6 and observe MANUAL_REVIEW. Then decide what the test should assert in that case.
 - Kill transfer-service instead (the outbox relay restarts; duplicate publishes are possible).
 - Add a k6/Gatling script against a `docker compose` deployment and watch the Grafana dashboard.
+
+## Risk gate across real processes (M10)
+
+`RiskGateSystemTest` starts the same processes plus `risk-engine` (shared setup in `SystemHarness`) with review limit 300.00 EUR and block limit 600.00 EUR:
+
+1. ALLOW / REVIEW / BLOCK end to end; HELD and BLOCKed transfers have **zero rail payments**; 8 concurrent releases → one rail payment; 8 concurrent rejects → one refund.
+2. Release racing reject on 6 HELD transfers → exactly one verdict wins each time.
+3. Every decision on `risk.decisions.v1` is re-published, plus conflicting decisions for a COMPLETED, REFUNDED and HELD transfer → nothing changes (state, balance, rail statement).
+4. risk-engine SIGKILLed → transfer times out to HELD (fail closed), the late decision after restart is recorded IGNORED, operator release pays once.
+5. transfer-service and payout-worker SIGKILLed while 30 transfers are being decided → one applied decision and ≤ 1 rail payment each.
+6. Reconciliation is clean.
+
+The chaos test also runs through the gate now (all its amounts are ALLOWed).

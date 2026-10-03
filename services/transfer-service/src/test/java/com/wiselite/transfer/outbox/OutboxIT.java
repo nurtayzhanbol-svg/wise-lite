@@ -79,13 +79,14 @@ class OutboxIT {
     void relayPublishesEveryStateChangeInOrderWithEventIds() throws Exception {
         var alice = funded("100.00");
         var t = create(alice, "25.00");
+        transfers.approve(t.id(), "risk ALLOW");
         transfers.markProcessing(t.id());
         transfers.complete(t.id());
 
         drain();
 
-        var records = consumeFor(t.id(), 3);
-        assertThat(records).extracting(r -> parse(r).toState()).containsExactly("FUNDED", "PROCESSING", "COMPLETED");
+        var records = consumeFor(t.id(), 4);
+        assertThat(records).extracting(r -> parse(r).toState()).containsExactly("FUNDED", "APPROVED", "PROCESSING", "COMPLETED");
         for (var r : records) {
             assertThat(header(r, Topics.HEADER_EVENT_ID)).isEqualTo(parse(r).eventId().toString());
             assertThat(header(r, Topics.HEADER_EVENT_TYPE)).isEqualTo(TransferStateChanged.TYPE);
