@@ -1,0 +1,31 @@
+# Alerts on symptoms that mean "money is stuck or wrong", not on CPU. See docs/interview/08-observability.md.
+groups:
+  - name: wise-lite
+    rules:
+      - alert: OutboxBacklog
+        expr: max(wiselite_outbox_oldest_unpublished_age_seconds) > 60
+        for: 2m
+        annotations:
+          summary: "Events are not reaching Kafka (relay or Kafka down); downstream is stale"
+      - alert: PayoutOutcomeUnknownTooLong
+        expr: wiselite_payouts_oldest_unresolved_age_seconds > 1800
+        for: 5m
+        annotations:
+          summary: "A payout has had no final outcome for 30 min"
+      - alert: PayoutsInManualReview
+        expr: wiselite_payouts{status="MANUAL_REVIEW"} > 0
+        annotations:
+          summary: "Payouts need a human (unknown outcome after max retries or contract violation)"
+      - alert: RailCircuitOpen
+        expr: wiselite_rails_circuit_state == 1
+        for: 1m
+        annotations:
+          summary: "Payment rail failing; payouts paused"
+      - alert: ReconciliationCriticalBreak
+        expr: increase(wiselite_recon_breaks_total{severity="CRITICAL"}[1d]) > 0
+        annotations:
+          summary: "Reconciliation found money-level discrepancies"
+      - alert: WebhookSignatureFailures
+        expr: increase(wiselite_rails_callbacks_total{outcome="BAD_SIGNATURE"}[10m]) > 5
+        annotations:
+          summary: "Forged webhooks or a rotated secret"

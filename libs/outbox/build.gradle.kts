@@ -15,5 +15,6 @@ dependencies {
     api("org.springframework.boot:spring-boot-autoconfigure")
     api("com.fasterxml.jackson.core:jackson-databind")
     api(project(":libs:events"))
+    api("io.micrometer:micrometer-core")
     implementation("org.slf4j:slf4j-api")
 }

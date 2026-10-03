@@ -3,6 +3,8 @@ package com.wiselite.payout;
 import com.wiselite.rails.api.RailsApi;
 import com.wiselite.rails.api.RailsApi.PaymentRequest;
 import com.wiselite.rails.api.RailsApi.PaymentResponse;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
@@ -33,8 +35,10 @@ public class RailsClient {
 
     private final RestClient http;
     private final PayoutProperties properties;
+    private final MeterRegistry meters;
 
-    public RailsClient(RestClient.Builder builder, PayoutProperties properties) {
+    public RailsClient(RestClient.Builder builder, PayoutProperties properties, MeterRegistry meters) {
+        this.meters = meters;
         var factory = new SimpleClientHttpRequestFactory();
         factory.setConnectTimeout(properties.connectTimeout());
         factory.setReadTimeout(properties.readTimeout());
@@ -43,6 +47,14 @@ public class RailsClient {
     }
 
     public Result submit(PayoutStore.ClaimedPayout payout) {
+        var sample = Timer.start(meters);
+        var result = doSubmit(payout);
+        sample.stop(Timer.builder("wiselite.rails.calls").tag("outcome", result.getClass().getSimpleName())
+                .publishPercentileHistogram().register(meters));
+        return result;
+    }
+
+    private Result doSubmit(PayoutStore.ClaimedPayout payout) {
         var request = new PaymentRequest(payout.transferId().toString(), payout.amountMinor(), payout.currency(),
                 payout.recipientName(), payout.recipientIban(), properties.callbackUrl());
         try {

@@ -8,5 +8,5 @@ import org.springframework.context.annotation.Import;
  * {@code outbox_events} table to the service's own migrations (each service owns its schema).
  */
 @Configuration(proxyBeanMethods = false)
-@Import({OutboxWriter.class, OutboxRelay.class, OutboxRelayScheduler.class})
+@Import({OutboxWriter.class, OutboxRelay.class, OutboxRelayScheduler.class, OutboxMetrics.class})
 public class OutboxConfiguration {}

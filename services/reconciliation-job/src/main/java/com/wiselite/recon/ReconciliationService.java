@@ -1,5 +1,6 @@
 package com.wiselite.recon;
 
+import io.micrometer.core.instrument.Metrics;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -61,6 +62,8 @@ public class ReconciliationService {
                     .params(runId, b.type().name(), b.severity().name(), b.reference(), b.details())
                     .update();
         }
+        breaks.forEach(b -> Metrics.counter("wiselite.recon.breaks", "severity", b.severity().name(), "type", b.type().name())
+                .increment());
         if (!breaks.isEmpty()) {
             log.warn("Reconciliation {} found {} breaks, worst {}", runId, breaks.size(), breaks.get(0));
         }

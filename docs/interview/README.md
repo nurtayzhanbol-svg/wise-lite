@@ -23,3 +23,4 @@ One file per topic, written so you can explain and defend the design in a Wise s
 | Observability, SLOs | M8 | — |
 | Stream processing windows | M9 | — |
 | Scaling wise-lite 100× | final | — |
+| Observability: business metrics, tracing, symptom alerts | M8 | [08-observability.md](08-observability.md) |

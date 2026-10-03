@@ -14,6 +14,7 @@ import com.wiselite.transfer.ledger.JournalEntryType;
 import com.wiselite.transfer.ledger.LedgerService;
 import com.wiselite.transfer.ledger.Money;
 import com.wiselite.outbox.OutboxWriter;
+import io.micrometer.core.instrument.Metrics;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.List;
@@ -21,6 +22,8 @@ import java.util.UUID;
 import java.util.function.Consumer;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 /**
  * Owns the transfer lifecycle. Every state change and its ledger movement happen in one
@@ -129,6 +132,13 @@ public class TransferService {
                 current.amount().minor(), current.amount().currency().getCurrencyCode(), current.recipient().name(),
                 current.recipient().iban(), reason, Instant.now(clock));
         outbox.append(Topics.TRANSFER_EVENTS, id.toString(), TransferStateChanged.TYPE, event.eventId(), event);
+        // Count after commit: a rolled-back transition must not show up in the metrics.
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                Metrics.counter("wiselite.transfers.transitions", "to", target.name()).increment();
+            }
+        });
         return current.withState(target);
     }
 

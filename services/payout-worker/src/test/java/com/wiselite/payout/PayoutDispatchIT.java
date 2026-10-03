@@ -23,6 +23,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.actuate.observability.AutoConfigureObservability;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Import;
@@ -38,6 +39,8 @@ import org.springframework.test.context.DynamicPropertySource;
         "wiselite.payout.read-timeout=PT0.5S",
         "wiselite.payout.base-backoff=PT0.1S",
         "wiselite.payout.callback-secret=test-secret"})
+// Spring Boot tests disable metric exporters by default; we want the real /actuator/prometheus.
+@AutoConfigureObservability(tracing = false)
 @Import(TestcontainersConfig.class)
 class PayoutDispatchIT {
 
@@ -89,6 +92,7 @@ class PayoutDispatchIT {
     }
 
     @Autowired PayoutService payouts;
+    @Autowired PayoutMetrics metrics;
     @Autowired PayoutDispatcher dispatcher;
     @Autowired CircuitBreaker breaker;
     @Autowired JdbcClient jdbc;
@@ -247,6 +251,25 @@ class PayoutDispatchIT {
         assertThat(postCallback(body, sign(body)).statusCode()).isEqualTo(404);
         assertThat(jdbc.sql("SELECT count(*) FROM processed_events WHERE event_id = ?").param(eventId).query(Long.class).single())
                 .isZero();
+    }
+
+    @Test
+    void operationalMetricsAreExposedForPrometheus() throws Exception {
+        responder = key -> new StubResponse(503, "{}", 0);
+        newPayout();
+        dispatcher.dispatchDue();
+        metrics.refresh();
+
+        try (var client = HttpClient.newHttpClient()) {
+            var body = client.send(HttpRequest.newBuilder(URI.create("http://localhost:" + port + "/actuator/prometheus")).build(),
+                    HttpResponse.BodyHandlers.ofString()).body();
+            assertThat(body)
+                    .contains("wiselite_rails_calls_seconds_count{application=\"payout-worker\",outcome=\"Unknown\"")
+                    .contains("wiselite_payouts{application=\"payout-worker\",status=\"UNKNOWN\"} 1.0")
+                    .contains("wiselite_rails_circuit_state")
+                    .contains("wiselite_payouts_oldest_unresolved_age_seconds")
+                    .contains("wiselite_outbox_unpublished");
+        }
     }
 
     private UUID newPayout() {

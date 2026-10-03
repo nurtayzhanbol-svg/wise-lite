@@ -21,3 +21,4 @@
 - [x] M6: Close the loop: payouts.events.v1 -> transfer-service complete/fail.
 - [ ] M6: Rebuild exercises in `docs/interview/06-payouts-and-unknown-outcomes.md` §5.
 - [ ] M7: Rebuild exercises in `docs/interview/07-reconciliation.md` §5 (read order, isolation level, auto-resolver).
+- [ ] M8: Continue traces through the outbox (`traceparent` column) — see `docs/interview/08-observability.md` §3.

@@ -1,0 +1,7 @@
+apiVersion: 1
+providers:
+  - name: wise-lite
+    folder: wise-lite
+    type: file
+    options:
+      path: /var/lib/grafana/dashboards

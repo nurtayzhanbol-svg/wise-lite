@@ -3,6 +3,7 @@ package com.wiselite.payout;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wiselite.rails.api.RailsApi;
 import com.wiselite.rails.api.WebhookSignature;
+import io.micrometer.core.instrument.Metrics;
 import java.util.Map;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -29,6 +30,7 @@ public class RailsCallbackController {
     public ResponseEntity<Map<String, String>> callback(
             @RequestHeader(value = RailsApi.SIGNATURE_HEADER, required = false) String signature, @RequestBody String body) {
         if (!WebhookSignature.verify(secret, body, signature)) {
+            Metrics.counter("wiselite.rails.callbacks", "outcome", "BAD_SIGNATURE").increment();
             return ResponseEntity.status(401).body(Map.of("error", "bad signature"));
         }
         RailsApi.Callback callback;
@@ -37,7 +39,9 @@ public class RailsCallbackController {
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", "unparseable callback"));
         }
-        return ResponseEntity.ok(Map.of("outcome", callbacks.handle(callback).name()));
+        var outcome = callbacks.handle(callback);
+        Metrics.counter("wiselite.rails.callbacks", "outcome", outcome.name()).increment();
+        return ResponseEntity.ok(Map.of("outcome", outcome.name()));
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
