@@ -26,5 +26,17 @@ flowchart LR
 | observability stack | Tracing a transfer across HTTP and Kafka, SLOs | M8 |
 | risk-engine | Stream processing with windows, an async step in a workflow | M9 |
 
-## Current state (M0)
-Only `transfer-service` exists, with a health endpoint, Flyway migrations, and a Testcontainers-backed integration test. Local infrastructure (Postgres, Kafka) runs via `docker-compose.yml`.
+## Current state (M1)
+`transfer-service` contains the ledger core:
+
+```mermaid
+classDiagram
+  class JournalEntry { id; type; reference; postings }
+  class Posting { accountId; Money amount }
+  class Account { id; ownerId; currency; type }
+  JournalEntry "1" --> "2..*" Posting
+  Posting --> Account
+```
+
+- `ledger` package: `Money`, `Account`, `JournalEntry`, `LedgerService` (the only code that moves money), `LedgerRepository` (SQL).
+- REST: `POST /accounts`, `GET /accounts/{id}`, `GET /owners/{ownerId}/accounts`. Money movement is not exposed over HTTP yet; transfers arrive in M2 together with idempotency.

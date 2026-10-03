@@ -9,7 +9,7 @@ A simplified cross-border money-movement platform, built to study the engineerin
 | Milestone | Topic | Status |
 |-----------|-------|--------|
 | M0 | Monorepo skeleton, CI, local infra, Testcontainers | ✅ |
-| M1 | Ledger core (double-entry) | ⏳ |
+| M1 | Ledger core (double-entry) | ✅ |
 | M2 | Transfers, state machine, idempotency | ⏳ |
 | M3 | Concurrency & locking | ⏳ |
 | M4 | Transactional outbox → Kafka | ⏳ |

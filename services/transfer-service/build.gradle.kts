@@ -20,3 +20,7 @@ dependencies {
     testImplementation("org.testcontainers:junit-jupiter")
     testImplementation("org.testcontainers:postgresql")
 }
+
+dependencies {
+    testImplementation("net.jqwik:jqwik:1.9.1")
+}

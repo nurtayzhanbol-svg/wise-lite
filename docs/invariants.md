@@ -4,9 +4,10 @@ Properties that must hold at all times. Each one will be backed by a test that f
 
 | # | Invariant | Enforced by | Test |
 |---|-----------|-------------|------|
-| I1 | Every ledger transaction balances: the sum of its entries per currency is 0 | M1 | — |
-| I2 | A customer balance never goes below 0 | M1/M3 | — |
-| I3 | Ledger entries are append-only (no updates or deletes) | M1 | — |
+| I1 | Every ledger transaction balances: the sum of its entries per currency is 0 | `JournalEntry` + deferred DB trigger | `JournalEntryTest`, `LedgerDatabaseGuardsIT` |
+| I2 | A customer balance never goes below 0 | `LedgerService` overdraft check + DB `CHECK` (concurrency: M3) | `LedgerServiceIT`, `LedgerDatabaseGuardsIT` |
+| I3 | Ledger entries are append-only (no updates or deletes) | DB triggers | `LedgerDatabaseGuardsIT` |
+| I1b | Balance projection equals SUM(entries); total money is conserved | single DB transaction in `LedgerService.post` | `LedgerServiceIT.balanceProjectionAlwaysMatchesTheLedger` |
 | I4 | The same Idempotency-Key never creates more than one transfer | M2 | — |
 | I5 | A transfer only moves through allowed state transitions | M2 | — |
 | I6 | Every committed state change eventually produces exactly one event *effect* downstream | M4 | — |

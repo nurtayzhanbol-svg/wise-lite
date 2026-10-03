@@ -11,7 +11,7 @@ One file per topic, written so you can explain and defend the design in a Wise s
 
 | Topic | Milestone | File |
 |-------|-----------|------|
-| Money representation & double-entry ledger | M1 | — |
+| Money representation & double-entry ledger | M1 | [01-ledger.md](01-ledger.md) |
 | Idempotency keys | M2 | — |
 | State machines for payments | M2 | — |
 | Isolation levels, pessimistic vs optimistic locking | M3 | — |
