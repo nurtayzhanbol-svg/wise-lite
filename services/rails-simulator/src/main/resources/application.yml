@@ -1,0 +1,11 @@
+spring:
+  application:
+    name: rails-simulator
+
+server:
+  port: ${PORT:8083}
+
+wiselite:
+  rails:
+    callback-secret: ${RAILS_CALLBACK_SECRET:dev-secret}
+    seed: 42

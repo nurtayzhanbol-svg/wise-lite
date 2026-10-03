@@ -26,3 +26,24 @@ management:
     web:
       exposure:
         include: health,info,prometheus
+
+wiselite:
+  payout:
+    rails-url: ${RAILS_URL:http://localhost:8083}
+    callback-url: ${CALLBACK_URL:http://localhost:8081/rails/callbacks}
+    callback-secret: ${RAILS_CALLBACK_SECRET:dev-secret}
+    max-attempts: 8
+    base-backoff: PT1S
+    max-backoff: PT5M
+    # SUBMITTED but no webhook after this long -> ask the rail again (idempotent re-submit).
+    callback-timeout: PT5M
+    # Must exceed connect + read timeout, or a slow call could be claimed twice.
+    lease: PT30S
+    batch-size: 20
+    connect-timeout: PT1S
+    read-timeout: PT2S
+    breaker-failure-threshold: 5
+    breaker-open-duration: PT30S
+    dispatcher:
+      enabled: ${PAYOUT_DISPATCHER_ENABLED:true}
+      interval: PT1S

@@ -16,3 +16,5 @@ Properties that must hold at all times. Each one will be backed by a test that f
 | I8 | Every ledger payout matches a bank-side record, or appears in the reconciliation report | M7 | — |
 | I9 | A quote is consumed at most once; never after expiry | conditional UPDATE in `QuoteService.consume` + DB `CHECK`s | `QuoteApiIT` |
 | I10 | Converted amount ≤ exact conversion, within 1 minor unit | `FxMath` rounding rules | `FxMathTest` (jqwik) |
+| I11 | A payout is submitted to the rail under exactly one idempotency key (transfer id) | `RailsClient` | `PayoutDispatchIT.unknownOutcome…` |
+| I12 | A final payout status (SETTLED/REJECTED) never changes | status-guarded UPDATEs in `PayoutStore` | `PayoutDispatchIT` conflict + race tests |

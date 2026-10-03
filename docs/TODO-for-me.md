@@ -18,3 +18,5 @@
 - [ ] M5: Cross-currency transfers in transfer-service using a consumed quote + FX_POOL multi-currency journal.
 - [ ] M5: Fallback rate provider chain; publication-date staleness check.
 - [ ] M5: Rebuild `FxMath` from ADR 0012 (`docs/interview/05-fx-quotes.md` §3).
+- [ ] M6: Close the loop: payouts.events.v1 -> transfer-service complete/fail.
+- [ ] M6: Rebuild exercises in `docs/interview/06-payouts-and-unknown-outcomes.md` §5.

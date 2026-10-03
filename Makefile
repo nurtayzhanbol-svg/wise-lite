@@ -15,5 +15,8 @@ test:
 run-transfer:  ## run transfer-service against `make up` infrastructure
 	./gradlew :services:transfer-service:bootRun
 
+run-rails:
+	./gradlew :services:rails-simulator:bootRun
+
 run-payout:
 	./gradlew :services:payout-worker:bootRun

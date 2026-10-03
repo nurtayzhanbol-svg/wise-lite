@@ -31,5 +31,5 @@ wiselite:
   outbox:
     relay:
       enabled: ${OUTBOX_RELAY_ENABLED:true}
-      interval: 200ms
+      interval: PT0.2S  # ISO-8601: @Scheduled does not parse "200ms"
       batch-size: 100

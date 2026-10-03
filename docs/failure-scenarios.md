@@ -24,3 +24,9 @@ What can go wrong, and how the system is expected to behave. Filled in per miles
 | Request fails (insufficient funds), client retries later with same key | Key not stored; retry runs fresh | M2 | `TransferApiIT.failedRequestIsNotStored…` |
 | Duplicate `complete`/`fail` event | No-op; journal posted once | M2 | `TransferServiceIT.duplicateEventsAreNoOps` |
 | `fail` arrives after `complete` | 409; no money moves | M2 | `TransferServiceIT.illegalTransitions…` |
+| Rail times out / 5xx after processing (unknown outcome) | Retried with the same Idempotency-Key; paid once | M6 | `PayoutDispatchIT.unknownOutcomeIsResolved…`, `RailsSimulatorIT.failureAfterProcessing…` |
+| Rail keeps failing | Backoff + jitter; circuit opens; after max attempts MANUAL_REVIEW (never auto-failed) | M6 | `PayoutDispatchIT.circuitBreaker…`, `retriesStopAtMaxAttempts…` |
+| Webhook arrives before submit response | Final status is not overwritten | M6 | `PayoutDispatchIT.webhookArrivingBefore…` |
+| Duplicate / conflicting / forged webhook | Deduped / logged and ignored / 401 | M6 | `PayoutDispatchIT` |
+| Rail rejects (bad IBAN) | REJECTED, no retries | M6 | `PayoutDispatchIT.badRequestIsAPermanentRejection` |
+| Worker crashes mid-call | Lease expires, payout re-claimed, idempotent re-submit | M6 | design (ADR 0013) |

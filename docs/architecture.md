@@ -26,7 +26,7 @@ flowchart LR
 | observability stack | Tracing a transfer across HTTP and Kafka, SLOs | M8 |
 | risk-engine | Stream processing with windows, an async step in a workflow | M9 |
 
-## Current state (M5)
+## Current state (M6)
 `transfer-service` contains the ledger core:
 
 ```mermaid
@@ -64,3 +64,8 @@ stateDiagram-v2
 ### M5: fx-service
 - `POST /quotes`, `GET /quotes/{id}`, `POST /quotes/{id}/consume` (port 8082, DB `fx`). ECB rates are held in memory and refreshed every 10 min. It fails closed after 1 h without a successful refresh.
 - Not wired into transfer-service yet (TODO): same-currency transfers only so far.
+
+### M6: payouts
+- `rails-simulator` (port 8083, in-memory): idempotent `POST /payments`, signed webhooks, fault injection via `POST /admin/faults`.
+- `payout-worker` dispatcher: lease-based claiming, idempotent submission, response classification, backoff, circuit breaker, `POST /rails/callbacks`.
+- `libs/rails-api`: the rail contract + HMAC signing.

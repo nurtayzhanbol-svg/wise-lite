@@ -14,7 +14,7 @@ A simplified cross-border money-movement platform, built to study the engineerin
 | M3 | Concurrency & locking | ✅ |
 | M4 | Transactional outbox → Kafka | ✅ |
 | M5 | fx-service | ✅ |
-| M6 | rails-simulator + payout-worker | ⏳ |
+| M6 | rails-simulator + payout-worker | ✅ |
 | M7 | Reconciliation | ⏳ |
 | M8 | Observability, load, chaos | ⏳ |
 | M9 | risk-engine (Kafka Streams) | ⏳ |
