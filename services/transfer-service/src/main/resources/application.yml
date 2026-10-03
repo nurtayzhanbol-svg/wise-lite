@@ -1,0 +1,18 @@
+spring:
+  application:
+    name: transfer-service
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/transfers}
+    username: ${DB_USER:wiselite}
+    password: ${DB_PASSWORD:wiselite}
+  flyway:
+    enabled: true
+
+server:
+  port: ${PORT:8080}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
