@@ -3,6 +3,8 @@ package com.wiselite.transfer.transfer;
 import static com.wiselite.transfer.ledger.Posting.credit;
 import static com.wiselite.transfer.ledger.Posting.debit;
 
+import com.wiselite.events.Topics;
+import com.wiselite.events.TransferStateChanged;
 import com.wiselite.transfer.ledger.AccountNotFoundException;
 import com.wiselite.transfer.ledger.AccountService;
 import com.wiselite.transfer.ledger.AccountType;
@@ -11,6 +13,7 @@ import com.wiselite.transfer.ledger.JournalEntry;
 import com.wiselite.transfer.ledger.JournalEntryType;
 import com.wiselite.transfer.ledger.LedgerService;
 import com.wiselite.transfer.ledger.Money;
+import com.wiselite.transfer.outbox.OutboxWriter;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.List;
@@ -32,8 +35,11 @@ public class TransferService {
     private final AccountService accounts;
     private final LedgerService ledger;
     private final Clock clock;
+    private final OutboxWriter outbox;
 
-    public TransferService(TransferRepository transfers, AccountService accounts, LedgerService ledger, Clock clock) {
+    public TransferService(TransferRepository transfers, AccountService accounts, LedgerService ledger, Clock clock,
+            OutboxWriter outbox) {
+        this.outbox = outbox;
         this.transfers = transfers;
         this.accounts = accounts;
         this.ledger = ledger;
@@ -118,6 +124,11 @@ public class TransferService {
         sideEffect.accept(current);
         transfers.updateState(id, target);
         transfers.appendHistory(id, current.state(), target, reason);
+        // Same transaction as the state change: the event exists if and only if the change committed.
+        var event = new TransferStateChanged(UUID.randomUUID(), id, current.ownerId(), current.state().name(), target.name(),
+                current.amount().minor(), current.amount().currency().getCurrencyCode(), current.recipient().name(),
+                current.recipient().iban(), reason, Instant.now(clock));
+        outbox.append(Topics.TRANSFER_EVENTS, id.toString(), TransferStateChanged.TYPE, event.eventId(), event);
         return current.withState(target);
     }
 

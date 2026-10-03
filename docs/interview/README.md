@@ -15,8 +15,8 @@ One file per topic, written so you can explain and defend the design in a Wise s
 | Idempotency keys | M2 | [02-idempotency-and-state-machines.md](02-idempotency-and-state-machines.md) |
 | State machines for payments | M2 | [02-idempotency-and-state-machines.md](02-idempotency-and-state-machines.md) |
 | Isolation levels, pessimistic vs optimistic locking | M3 | [03-concurrency.md](03-concurrency.md) |
-| Transactional outbox vs 2PC vs CDC | M4 | — |
-| Kafka delivery semantics & idempotent consumers | M4 | — |
+| Transactional outbox vs 2PC vs CDC | M4 | [04-outbox-and-kafka.md](04-outbox-and-kafka.md) |
+| Kafka delivery semantics & idempotent consumers | M4 | [04-outbox-and-kafka.md](04-outbox-and-kafka.md) |
 | Caching, staleness, time in tests | M5 | — |
 | Retries, backoff, circuit breakers, unknown outcomes | M6 | — |
 | Reconciliation | M7 | — |

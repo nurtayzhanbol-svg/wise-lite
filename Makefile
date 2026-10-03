@@ -1,4 +1,4 @@
-.PHONY: up down build test run-transfer
+.PHONY: up down build test run-transfer run-payout
 
 up:            ## start local infrastructure (Postgres, Kafka)
 	docker compose up -d --wait
@@ -14,3 +14,6 @@ test:
 
 run-transfer:  ## run transfer-service against `make up` infrastructure
 	./gradlew :services:transfer-service:bootRun
+
+run-payout:
+	./gradlew :services:payout-worker:bootRun

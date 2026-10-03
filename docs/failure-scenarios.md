@@ -7,8 +7,11 @@ What can go wrong, and how the system is expected to behave. Filled in per miles
 | Client retries `POST /transfers` after a network timeout | Same transfer returned, no duplicate | M2 | `TransferApiIT.retryWithSameKey…`, `concurrentRequests…` |
 | Two concurrent debits from the same balance | One succeeds, the other is rejected or waits; balance never negative | M3 | `LedgerConcurrencyIT.concurrentDebitsNeverOverdraw` |
 | Opposing transfers A→B and B→A at the same time | No deadlock (global lock order) | M3 | `LedgerConcurrencyIT.opposingTransfers…`; deadlock reproduced without ordering in `ConcurrencyAnomaliesIT` |
-| Service crashes after DB commit, before publishing to Kafka | Event is still published (outbox) | M4 | — |
-| Kafka delivers the same event twice | Consumer applies it once | M4 | — |
+| Service crashes after DB commit, before publishing to Kafka | Event is still published (outbox) | M4 | `OutboxIT.stateChangeAndEventCommitTogether` |
+| Kafka unavailable | Transfers still succeed; events queue in the outbox and publish after recovery | M4 | `OutboxIT.kafkaOutageKeepsEventsInTheOutboxUntilItRecovers` (pauses the broker container) |
+| Kafka delivers the same event twice | Consumer applies it once | M4 | `PayoutWorkerIT.redeliveredEventIsAppliedOnce` |
+| Malformed (poison) record | Sent to DLT; partition keeps flowing | M4 | `PayoutWorkerIT.poisonRecordGoesToTheDlt…` |
+| Consumer DB blip | Retried with backoff; effect once | M4 | `PayoutWorkerIT.transientFailuresAreRetried…` |
 | FX provider is down | Recent cached rate used within a freshness limit, otherwise a clear 503 | M5 | — |
 | Payout request times out but the bank actually paid | Transfer stays in an "unknown" state until confirmed; never paid twice | M6 | — |
 | Bank sends a duplicate or late webhook | Ignored or applied idempotently | M6 | — |

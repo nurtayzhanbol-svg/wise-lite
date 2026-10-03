@@ -11,3 +11,7 @@
 - [ ] M3: Implement "validate before lock" pessimistic variant and re-run the benchmark.
 - [ ] M3: Add a retry-on-40P01/40001 wrapper (with jitter) as a safety net and test it.
 - [ ] M3: Prototype sharded fee account (N sub-accounts) and benchmark hot-account throughput.
+- [ ] M4: Rebuild exercises in `docs/interview/04-outbox-and-kafka.md` §6.
+- [ ] M4: Outbox retention job + `processed_events` pruning.
+- [ ] M4: Make relay ordering safe with several instances (partition rows by key hash).
+- [ ] M4: DLT replay CLI.

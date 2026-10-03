@@ -14,4 +14,6 @@ dependencyResolutionManagement {
     }
 }
 
+include("libs:events")
 include("services:transfer-service")
+include("services:payout-worker")

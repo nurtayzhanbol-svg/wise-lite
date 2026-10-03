@@ -9,10 +9,10 @@ extra["testcontainers.version"] = "1.21.4"
 
 dependencies {
     implementation(project(":libs:events"))
-    implementation("org.springframework.kafka:spring-kafka")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-jdbc")
+    implementation("org.springframework.kafka:spring-kafka")
     implementation("org.flywaydb:flyway-core")
     implementation("org.flywaydb:flyway-database-postgresql")
     runtimeOnly("org.postgresql:postgresql")
@@ -22,23 +22,5 @@ dependencies {
     testImplementation("org.testcontainers:junit-jupiter")
     testImplementation("org.testcontainers:postgresql")
     testImplementation("org.testcontainers:kafka")
-}
-
-dependencies {
-    testImplementation("net.jqwik:jqwik:1.9.1")
-}
-
-// Benchmarks are slow and machine-dependent: excluded from `test`, run with `./gradlew benchmark`.
-tasks.test {
-    useJUnitPlatform { excludeTags("benchmark") }
-}
-
-tasks.register<Test>("benchmark") {
-    description = "Runs locking-strategy benchmarks (tagged 'benchmark')."
-    group = "verification"
-    testClassesDirs = sourceSets.test.get().output.classesDirs
-    classpath = sourceSets.test.get().runtimeClasspath
-    useJUnitPlatform { includeTags("benchmark") }
-    outputs.upToDateWhen { false }
-    testLogging { showStandardStreams = true }
+    testImplementation("org.awaitility:awaitility")
 }

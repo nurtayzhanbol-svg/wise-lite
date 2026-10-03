@@ -1,0 +1,2 @@
+-- One database per service: services never share tables, only events.
+CREATE DATABASE payouts OWNER wiselite;

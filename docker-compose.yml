@@ -7,6 +7,8 @@ services:
       POSTGRES_PASSWORD: wiselite
       POSTGRES_DB: transfers
     ports: ["5432:5432"]
+    volumes:
+      - ./infra/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U wiselite"]
       interval: 5s

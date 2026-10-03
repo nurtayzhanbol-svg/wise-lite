@@ -11,6 +11,6 @@ Properties that must hold at all times. Each one will be backed by a test that f
 | I4 | The same Idempotency-Key never creates more than one transfer | key row in the business transaction + PK `(owner_id, key)` | `TransferApiIT` (incl. 16-thread race) |
 | I5 | A transfer only moves through allowed state transitions; each money movement happens once | `TransferState` table, row lock, same-state no-op, DB `CHECK` on state | `TransferStateTest`, `TransferServiceIT` |
 | I5b | `PAYOUT_CLEARING` balance = sum of FUNDED + PROCESSING transfers | state change and journal in one transaction | `TransferServiceIT` (checked globally in M7) |
-| I6 | Every committed state change eventually produces exactly one event *effect* downstream | M4 | — |
+| I6 | Every committed state change eventually produces exactly one event *effect* downstream | outbox row in the same transaction; at-least-once relay; consumer dedupe (`processed_events`) + natural key (`payouts.transfer_id`) | `OutboxIT`, `PayoutWorkerIT` |
 | I7 | A transfer is paid out at most once, even with retries and duplicate callbacks | M6 | — |
 | I8 | Every ledger payout matches a bank-side record, or appears in the reconciliation report | M7 | — |
